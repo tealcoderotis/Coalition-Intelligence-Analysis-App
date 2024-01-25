@@ -12,17 +12,25 @@ def addCsvFile():
 def mergeCsvFiles():
     global dataFrame
     global filesToMerge
-    dataFrame = pandas.DataFrame()
-    for file in filesToMerge:
-        data = pandas.read_csv(file)
-        fileDataFrame = pandas.DataFrame(data)
-        pandas.concat([dataFrame, fileDataFrame], axis=1)
+    dataFrame = pandas.read_csv(filesToMerge[0])
+    for i in range(1, len(filesToMerge)):
+        data = pandas.read_csv(filesToMerge[i])
+        pandas.concat([dataFrame, data], ignore_index=True)
     initalizeDataWindow()
 
 def initalizeDataWindow():
+    global dataWindow
+    global variableDropdown
+    global currentVariableDropdown
+    global dataFrame
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
     dataWindow.title("Coalition Intelligence Graphing App")
+    dataFrameColumns = list(dataFrame.columns)
+    print(dataFrame.to_string())
+    currentVariableDropdown = tkinter.StringVar(value=dataFrameColumns[0])
+    variableDropdown = tkinter.OptionMenu(dataWindow, currentVariableDropdown, *dataFrameColumns)
+    variableDropdown.grid(row=0, column=0)
     dataWindow.mainloop()
 
 def initalizeMergeWindow():
@@ -36,12 +44,12 @@ def initalizeMergeWindow():
     mergeWindow.geometry("500x300")
     mergeWindow.columnconfigure(0, weight=1)
     mergeWindow.rowconfigure(0, weight=1)
-    csvFileListbox = tkinter.Listbox()
+    csvFileListbox = tkinter.Listbox(mergeWindow)
     csvFileListbox.grid(row=0, column=0, sticky="NESW", columnspan=3)
-    addCsvFileButton = tkinter.Button(text="Add CSV file", command=addCsvFile)
+    addCsvFileButton = tkinter.Button(mergeWindow, text="Add CSV file", command=addCsvFile)
     addCsvFileButton.grid(row=1, column=1)
     #TODO Display an error message when there is no data or CSV files selected
-    displayDataButton = tkinter.Button(text="Done", command=mergeCsvFiles)
+    displayDataButton = tkinter.Button(mergeWindow, text="Done", command=mergeCsvFiles)
     displayDataButton.grid(row=1, column=2)
     mergeWindow.mainloop()
 
