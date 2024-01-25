@@ -1,6 +1,7 @@
 import pandas
 import tkinter
 import tkinter.filedialog
+import tkinter.simpledialog
 
 POINT_VALUES = {
     "auto_leave": 2,
@@ -14,7 +15,7 @@ POINT_VALUES = {
 
 def addCsvFile():
     global filesToMerge
-    files = tkinter.filedialog.askopenfilenames(filetypes=[("CSV File", "*.csv")])
+    files = tkinter.filedialog.askopenfilenames(parent=mergeWindow, filetypes=[("CSV File", "*.csv")])
     for file in files:
         filesToMerge.append(file)
     csvFileListbox.configure(listvariable=tkinter.StringVar(value=filesToMerge))
@@ -25,29 +26,42 @@ def mergeCsvFiles():
     dataFrame = pandas.read_csv(filesToMerge[0])
     for i in range(1, len(filesToMerge)):
         data = pandas.read_csv(filesToMerge[i])
-        pandas.concat([dataFrame, data], ignore_index=True)
+        dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
     initalizeDataWindow()
+
+def exportMergedCsv():
+    global dataFrame
+    fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
+    if (len(fileName) > 0):
+        dataFrame.to_csv(fileName, index=False)
+
+def exportTeamData():
+    tkinter.simpledialog.askinteger(parent=dataWindow, title="Export team data as CSV", prompt="Enter team number", minvalue=0)
 
 def initalizeDataWindow():
     global dataWindow
-    global variableDropdown
-    global currentVariableDropdown
     global dataFrame
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
     dataWindow.title("Coalition Intelligence Graphing App")
     dataWindow.geometry("800x480")
+    dataWindow.columnconfigure(0, weight=1)
+    upperFrame = tkinter.Frame()
+    upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
-    currentVariableDropdown = tkinter.StringVar(value=dataFrameColumns[0])
-    variableDropdown = tkinter.OptionMenu(dataWindow, currentVariableDropdown, *dataFrameColumns)
-    variableDropdown.grid(row=0, column=0)
+    variableDropdown = tkinter.OptionMenu(upperFrame, tkinter.StringVar(value=dataFrameColumns[0]), *dataFrameColumns)
+    variableDropdown.grid(row=0, column=0, sticky="NEW")
+    exportTeamButton = tkinter.Button(upperFrame, text="Export team data as CSV", command=exportTeamData)
+    exportTeamButton.grid(row=0, column=1)
+    exportMergedButton = tkinter.Button(upperFrame, text="Export merged CSV", command=exportMergedCsv)
+    exportMergedButton.grid(row=0, column=2)
+    upperFrame.grid(row=0, column=0, sticky="NEW")
     dataWindow.mainloop()
 
 def initalizeMergeWindow():
     global filesToMerge
     global mergeWindow
     global csvFileListbox
-    global addCsvFileButton
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.title("Merge CSV Files")
