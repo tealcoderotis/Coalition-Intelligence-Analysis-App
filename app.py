@@ -2,6 +2,16 @@ import pandas
 import tkinter
 import tkinter.filedialog
 
+POINT_VALUES = {
+    "auto_leave": 2,
+    "ampNotes": 1,
+    "auto_ampNotes": 2,
+    "speakerNotes": 2,
+    "auto_speakerNotes": 5,
+    "ampSpeakerNotes": 5,
+    "trapNotes": 5
+}
+
 def addCsvFile():
     global filesToMerge
     files = tkinter.filedialog.askopenfilenames(filetypes=[("CSV File", "*.csv")])
