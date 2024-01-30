@@ -35,27 +35,52 @@ def exportMergedCsv():
     if (len(fileName) > 0):
         dataFrame.to_csv(fileName, index=False)
 
-def exportTeamData():
-    tkinter.simpledialog.askinteger(parent=dataWindow, title="Export team data as CSV", prompt="Enter team number", minvalue=0)
+def selectTeam():
+    tkinter.simpledialog.askinteger(parent=dataWindow, title="Select Team", prompt="Enter the team number", minvalue=1)
+
+def selectValue(*args):
+    global dataFrame
+    global rawValueDataText
+    global variableDropdown
+    global variableDropdownVariable
+    rawValueDataText.configure(state=tkinter.NORMAL)
+    rawValueDataText.delete("1.0", tkinter.END)
+    rawValueDataText.insert(tkinter.END, dataFrame[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+    rawValueDataText.configure(state=tkinter.DISABLED)
 
 def initalizeDataWindow():
     global dataWindow
     global dataFrame
+    global rawValueDataText
+    global variableDropdown
+    global variableDropdownVariable
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
-    dataWindow.title("Coalition Intelligence Graphing App")
+    dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x480")
     dataWindow.columnconfigure(0, weight=1)
+    dataWindow.rowconfigure(1, weight=1)
     upperFrame = tkinter.Frame()
     upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
-    variableDropdown = tkinter.OptionMenu(upperFrame, tkinter.StringVar(value=dataFrameColumns[0]), *dataFrameColumns)
+    variableDropdownVariable = tkinter.StringVar(value=dataFrameColumns[0])
+    variableDropdownVariable.trace_add("write", selectValue)
+    variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
     variableDropdown.grid(row=0, column=0, sticky="NEW")
-    exportTeamButton = tkinter.Button(upperFrame, text="Export team data as CSV", command=exportTeamData)
+    exportTeamButton = tkinter.Button(upperFrame, text="Select team", command=selectTeam)
     exportTeamButton.grid(row=0, column=1)
     exportMergedButton = tkinter.Button(upperFrame, text="Export merged CSV", command=exportMergedCsv)
     exportMergedButton.grid(row=0, column=2)
     upperFrame.grid(row=0, column=0, sticky="NEW")
+    mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
+    valueContainer = tkinter.Frame()
+    rawValueDataText = tkinter.Text(valueContainer)
+    rawValueDataText.grid(row=0, column=0)
+    mainContainer.add(valueContainer, sticky="NESW")
+    pointContainer = tkinter.Frame()
+    mainContainer.add(pointContainer, sticky="NESW")
+    mainContainer.grid(row=1, column=0, sticky="NESW")
+    selectValue()
     dataWindow.mainloop()
 
 def initalizeMergeWindow():
