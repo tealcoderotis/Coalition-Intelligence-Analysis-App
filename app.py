@@ -32,18 +32,34 @@ def mergeCsvFiles():
 def exportMergedCsv():
     global dataFrame
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
-    if (len(fileName) > 0):
-        dataFrame.to_csv(fileName, index=False)
+    if len(fileName) > 0:
+        if teamToFilter != None:
+            filteredDataFrame.to_csv(fileName, index=False)
+        else:
+            dataFrame.to_csv(fileName, index=False)
 
 def selectTeam():
-    tkinter.simpledialog.askinteger(parent=dataWindow, title="Select Team", prompt="Enter the team number", minvalue=1)
+    global dataFrame
+    global filteredDataFrame
+    global teamToFilter
+    teamToFilter = tkinter.simpledialog.askinteger(parent=dataWindow, title="Select Team", prompt="Enter the team number. Select cancel to show all teams.", minvalue=1)
+    if teamToFilter != None:
+        filteredDataFrame = dataFrame[dataFrame["teamNum"].values == teamToFilter]
+    else:
+        filteredDataFrame = None
+    selectValue()
 
 def selectValue(*args):
     global dataFrame
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
-    dataFrameToDisplay = dataFrame[dataFrame["noShow"].values == False]
+    global teamToFilter
+    global filteredDataFrame
+    if teamToFilter != None:
+        dataFrameToDisplay = filteredDataFrame[filteredDataFrame["noShow"].values == False]
+    else:
+        dataFrameToDisplay = dataFrame[dataFrame["noShow"].values == False]
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
     rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
@@ -55,6 +71,10 @@ def initalizeDataWindow():
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
+    global teamToFilter
+    global filteredDataFrame
+    teamToFilter = None
+    filteredDataFrame = None
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
     dataWindow.title("Coalition Intelligence Analysis App")
@@ -73,7 +93,7 @@ def initalizeDataWindow():
     variableDropdown.grid(row=0, column=0, sticky="NEW")
     exportTeamButton = tkinter.Button(upperFrame, text="Select team", command=selectTeam)
     exportTeamButton.grid(row=0, column=1)
-    exportMergedButton = tkinter.Button(upperFrame, text="Export merged CSV", command=exportMergedCsv)
+    exportMergedButton = tkinter.Button(upperFrame, text="Export as CSV", command=exportMergedCsv)
     exportMergedButton.grid(row=0, column=2)
     upperFrame.grid(row=0, column=0, sticky="NEW")
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
