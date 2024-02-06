@@ -57,9 +57,14 @@ def selectValue(*args):
     global teamToFilter
     global filteredDataFrame
     if teamToFilter != None:
-        dataFrameToDisplay = filteredDataFrame[filteredDataFrame["noShow"].values == False]
+        dataFrameToUse = filteredDataFrame
     else:
-        dataFrameToDisplay = dataFrame[dataFrame["noShow"].values == False]
+        dataFrameToUse = dataFrame
+    noShowCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == True].shape[0]
+    showCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == False].shape[0]
+    totalShowCount = noShowCount + showCount
+    noShowCountLabel.configure(text=f"{noShowCount} instances without robot\n{showCount} instances with robot\n{totalShowCount} instances in total")
+    dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
     rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
@@ -71,6 +76,7 @@ def initalizeDataWindow():
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
+    global noShowCountLabel
     global teamToFilter
     global filteredDataFrame
     teamToFilter = None
@@ -98,8 +104,12 @@ def initalizeDataWindow():
     upperFrame.grid(row=0, column=0, sticky="NEW")
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
-    rawValueDataText = tkinter.Text(valueContainer)
-    rawValueDataText.grid(row=0, column=0)
+    valueContainer.rowconfigure(1, weight=1)
+    valueContainer.columnconfigure(0, weight=1)
+    noShowCountLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
+    noShowCountLabel.grid(row=0, column=0, sticky="NEW")
+    rawValueDataText = tkinter.Text(valueContainer, wrap=tkinter.NONE)
+    rawValueDataText.grid(row=1, column=0, sticky="NESW")
     mainContainer.add(valueContainer, sticky="NESW")
     pointContainer = tkinter.Frame()
     mainContainer.add(pointContainer, sticky="NESW")
