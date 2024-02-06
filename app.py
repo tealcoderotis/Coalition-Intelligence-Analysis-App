@@ -43,9 +43,10 @@ def selectValue(*args):
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
+    dataFrameToDisplay = dataFrame[dataFrame["noShow"].values == False]
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
-    rawValueDataText.insert(tkinter.END, dataFrame[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+    rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
     rawValueDataText.configure(state=tkinter.DISABLED)
 
 def initalizeDataWindow():
@@ -63,6 +64,9 @@ def initalizeDataWindow():
     upperFrame = tkinter.Frame()
     upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
+    dataFrameColumns.remove("roundNum")
+    dataFrameColumns.remove("teamNum")
+    dataFrameColumns.remove("noShow")
     variableDropdownVariable = tkinter.StringVar(value=dataFrameColumns[0])
     variableDropdownVariable.trace_add("write", selectValue)
     variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
