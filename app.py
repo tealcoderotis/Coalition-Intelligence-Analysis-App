@@ -54,6 +54,8 @@ def selectValue(*args):
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
+    global noShowCountLabel
+    global standardDeviationLabel
     global teamToFilter
     global filteredDataFrame
     if teamToFilter != None:
@@ -65,6 +67,11 @@ def selectValue(*args):
     totalShowCount = noShowCount + showCount
     noShowCountLabel.configure(text=f"{noShowCount} instances without robot\n{showCount} instances with robot\n{totalShowCount} instances in total")
     dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    if (dataFrameToDisplay[variableDropdownVariable.get()].dtypes == "int64"):
+        standardDeviationLabel.configure(text=f"Standard deviation: {dataFrameToDisplay[variableDropdownVariable.get()].std()}")
+        standardDeviationLabel.grid()
+    else:
+        standardDeviationLabel.grid_remove()
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
     rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
@@ -77,6 +84,7 @@ def initalizeDataWindow():
     global variableDropdown
     global variableDropdownVariable
     global noShowCountLabel
+    global standardDeviationLabel
     global teamToFilter
     global filteredDataFrame
     teamToFilter = None
@@ -110,6 +118,8 @@ def initalizeDataWindow():
     noShowCountLabel.grid(row=0, column=0, sticky="NEW")
     rawValueDataText = tkinter.Text(valueContainer, wrap=tkinter.NONE)
     rawValueDataText.grid(row=1, column=0, sticky="NESW")
+    standardDeviationLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
+    standardDeviationLabel.grid(row=2, column=0, sticky="NESW")
     mainContainer.add(valueContainer, sticky="NESW")
     pointContainer = tkinter.Frame()
     mainContainer.add(pointContainer, sticky="NESW")
