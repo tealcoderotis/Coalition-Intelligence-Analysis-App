@@ -1,5 +1,6 @@
 import pandas
 from math import isnan
+from matplotlib import pyplot
 import tkinter
 import tkinter.filedialog
 import tkinter.simpledialog
@@ -75,13 +76,27 @@ def selectValue(*args):
         else:
             standardDeviationLabel.configure(text=f"Standard deviation: {columnToDisplay.std()}")
             standardDeviationLabel.grid()
-        print(columnToDisplay.std())
+        plotButtonContainer.grid()
     else:
         standardDeviationLabel.grid_remove()
+        plotButtonContainer.grid_remove()
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
     rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
     rawValueDataText.configure(state=tkinter.DISABLED)
+
+def showBoxPlot():
+    global teamToFilter
+    global filteredDataFrame
+    if teamToFilter != None:
+        dataFrameToUse = filteredDataFrame
+    else:
+        dataFrameToUse = dataFrame
+    dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
+    columnToDisplay.plot.box()
+    pyplot.get_current_fig_manager().set_window_title("Box Plot")
+    pyplot.show()
 
 def initalizeDataWindow():
     global dataWindow
@@ -91,6 +106,7 @@ def initalizeDataWindow():
     global variableDropdownVariable
     global noShowCountLabel
     global standardDeviationLabel
+    global plotButtonContainer
     global teamToFilter
     global filteredDataFrame
     teamToFilter = None
@@ -125,7 +141,13 @@ def initalizeDataWindow():
     rawValueDataText = tkinter.Text(valueContainer, wrap=tkinter.NONE)
     rawValueDataText.grid(row=1, column=0, sticky="NESW")
     standardDeviationLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
-    standardDeviationLabel.grid(row=2, column=0, sticky="NESW")
+    standardDeviationLabel.grid(row=2, column=0, sticky="NEW")
+    plotButtonContainer = tkinter.Frame(valueContainer)
+    boxplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show box plot", command=showBoxPlot)
+    boxplotDisplayButton.grid(row=0, column=0)
+    lineplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show line graph")
+    lineplotDisplayButton.grid(row=0, column=1)
+    plotButtonContainer.grid(row=3, column=0, sticky="NE")
     mainContainer.add(valueContainer, sticky="NESW")
     pointContainer = tkinter.Frame()
     mainContainer.add(pointContainer, sticky="NESW")
