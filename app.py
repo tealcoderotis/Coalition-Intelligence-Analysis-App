@@ -1,4 +1,5 @@
 import pandas
+from math import isnan
 import tkinter
 import tkinter.filedialog
 import tkinter.simpledialog
@@ -67,9 +68,14 @@ def selectValue(*args):
     totalShowCount = noShowCount + showCount
     noShowCountLabel.configure(text=f"{noShowCount} instances without robot\n{showCount} instances with robot\n{totalShowCount} instances in total")
     dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
-    if (dataFrameToDisplay[variableDropdownVariable.get()].dtypes == "int64"):
-        standardDeviationLabel.configure(text=f"Standard deviation: {dataFrameToDisplay[variableDropdownVariable.get()].std()}")
-        standardDeviationLabel.grid()
+    columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
+    if columnToDisplay.dtypes == "int64":
+        if isnan(columnToDisplay.std()):
+            standardDeviationLabel.grid_remove()
+        else:
+            standardDeviationLabel.configure(text=f"Standard deviation: {columnToDisplay.std()}")
+            standardDeviationLabel.grid()
+        print(columnToDisplay.std())
     else:
         standardDeviationLabel.grid_remove()
     rawValueDataText.configure(state=tkinter.NORMAL)
