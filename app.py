@@ -3,7 +3,7 @@ from math import isnan
 from matplotlib import pyplot
 import tkinter
 import tkinter.filedialog
-import tkinter.simpledialog
+import tkinter.messagebox
 
 POINT_VALUES = {
     "auto_leave": 2,
@@ -16,9 +16,9 @@ POINT_VALUES = {
 }
 
 def filterDataFrame(hideNoShow):
-    global teamToFilter
+    global teamsToFilter
     global filteredDataFrame
-    if teamToFilter != None:
+    if teamsToFilter != None:
         dataFrameToUse = filteredDataFrame
     else:
         dataFrameToUse = dataFrame
@@ -48,12 +48,12 @@ def exportMergedCsv():
     global dataFrame
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
     if len(fileName) > 0:
-        if teamToFilter != None:
+        if teamsToFilter != None:
             filteredDataFrame.to_csv(fileName, index=False)
         else:
             dataFrame.to_csv(fileName, index=False)
 
-def selectTeam():
+'''def selectTeam():
     global dataFrame
     global filteredDataFrame
     global teamToFilter
@@ -62,7 +62,7 @@ def selectTeam():
         filteredDataFrame = dataFrame[dataFrame["teamNum"].values == teamToFilter]
     else:
         filteredDataFrame = None
-    selectValue()
+    selectValue()'''
 
 def selectValue(*args):
     global dataFrame
@@ -71,7 +71,6 @@ def selectValue(*args):
     global variableDropdownVariable
     global noShowCountLabel
     global standardDeviationLabel
-    global teamToFilter
     global filteredDataFrame
     dataFrameToUse = filterDataFrame(False)
     noShowCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == True].shape[0]
@@ -109,6 +108,39 @@ def showLinePlot():
     pyplot.get_current_fig_manager().set_window_title("Line Graph")
     pyplot.show(block=True)
 
+def addTeamToFilter():
+    global teamsToFilterListboxValues
+    global teamsToFilterListboxValues
+    if addTeamToFilterEntry.get().isnumeric():
+        if int(addTeamToFilterEntry.get()) in dataFrame["teamNum"].values:
+            teamsToFilterListboxValues.append(addTeamToFilterEntry.get())
+            teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
+            addTeamToFilterEntry.delete(0, tkinter.END)
+        else:
+            tkinter.messagebox.showerror("Illegal Value", "There is no data for this team")
+    else:
+        tkinter.messagebox.showerror("Illegal Value", "Must be a number greater than zero")
+
+def saveTeamsToFilter():
+    global teamsToFilterListboxValues
+    global teamsToFilter
+    global filteredDataFrame
+    if len(teamsToFilterListboxValues) > 0:
+        teamsToFilter = teamsToFilterListboxValues.copy()
+        filteredDataFrame = dataFrame[dataFrame["teamNum"].isin(teamsToFilter)]
+        filterWindow.destroy()
+        selectValue()
+    else:
+        tkinter.messagebox.showerror("Error", "No teams selected")
+
+def showAllTeams():
+    global teamsToFilter
+    global filteredDataFrame
+    teamsToFilter = None
+    filteredDataFrame = None
+    filterWindow.destroy()
+    selectValue()
+
 def initalizeDataWindow():
     global dataWindow
     global dataFrame
@@ -118,9 +150,9 @@ def initalizeDataWindow():
     global noShowCountLabel
     global standardDeviationLabel
     global plotButtonContainer
-    global teamToFilter
+    global teamsToFilter
     global filteredDataFrame
-    teamToFilter = None
+    teamsToFilter = None
     filteredDataFrame = None
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
@@ -138,7 +170,7 @@ def initalizeDataWindow():
     variableDropdownVariable.trace_add("write", selectValue)
     variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
     variableDropdown.grid(row=0, column=0, sticky="NEW")
-    exportTeamButton = tkinter.Button(upperFrame, text="Select team", command=selectTeam)
+    exportTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
     exportTeamButton.grid(row=0, column=1)
     exportMergedButton = tkinter.Button(upperFrame, text="Export as CSV", command=exportMergedCsv)
     exportMergedButton.grid(row=0, column=2)
@@ -184,5 +216,34 @@ def initalizeMergeWindow():
     displayDataButton = tkinter.Button(mergeWindow, text="Done", command=mergeCsvFiles)
     displayDataButton.grid(row=1, column=2)
     mergeWindow.mainloop()
+
+def selectTeam():
+    global addTeamToFilterEntry
+    global teamsToFilterListboxValues
+    global teamsToFilterListbox
+    global teamsToFilter
+    global filterWindow
+    filterWindow = tkinter.Toplevel()
+    filterWindow.title("Select Teams")
+    filterWindow.geometry("500x300")
+    filterWindow.grab_set()
+    filterWindow.transient(dataWindow)
+    filterWindow.columnconfigure(0, weight=1)
+    filterWindow.rowconfigure(0, weight=1)
+    teamsToFilterListbox = tkinter.Listbox(filterWindow)
+    if teamsToFilter != None:
+        teamsToFilterListboxValues = teamsToFilter
+        teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
+    else:
+        teamsToFilterListboxValues = []
+    teamsToFilterListbox.grid(row=0, column=0, sticky="NESW", columnspan=4)
+    addTeamToFilterEntry = tkinter.Entry(filterWindow)
+    addTeamToFilterEntry.grid(row=1, column=0, sticky="EW")
+    addTeamToFilterButton = tkinter.Button(filterWindow, text="Add team", command=addTeamToFilter)
+    addTeamToFilterButton.grid(row=1, column=1)
+    saveTeamToFilterButton = tkinter.Button(filterWindow, text="Save", command=saveTeamsToFilter)
+    saveTeamToFilterButton.grid(row=1, column=2)
+    showAllTeamsToFilterButton = tkinter.Button(filterWindow, text="Show all teams", command=showAllTeams)
+    showAllTeamsToFilterButton.grid(row=1, column=3)
 
 initalizeMergeWindow()
