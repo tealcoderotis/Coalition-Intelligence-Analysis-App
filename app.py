@@ -126,7 +126,7 @@ def saveTeamsToFilter():
     global teamsToFilter
     global filteredDataFrame
     if len(teamsToFilterListboxValues) > 0:
-        teamsToFilter = teamsToFilterListboxValues
+        teamsToFilter = teamsToFilterListboxValues.copy()
         filteredDataFrame = dataFrame[dataFrame["teamNum"].isin(teamsToFilter)]
         filterWindow.destroy()
         selectValue()
