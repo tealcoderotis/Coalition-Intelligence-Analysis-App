@@ -113,7 +113,7 @@ def addTeamToFilter():
     global teamsToFilterListboxValues
     if addTeamToFilterEntry.get().isnumeric():
         if int(addTeamToFilterEntry.get()) in dataFrame["teamNum"].values:
-            teamsToFilterListboxValues.append(addTeamToFilterEntry.get())
+            teamsToFilterListboxValues.append(int(addTeamToFilterEntry.get()))
             teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
             addTeamToFilterEntry.delete(0, tkinter.END)
         else:
@@ -126,7 +126,7 @@ def saveTeamsToFilter():
     global teamsToFilter
     global filteredDataFrame
     if len(teamsToFilterListboxValues) > 0:
-        teamsToFilter = teamsToFilterListboxValues.copy()
+        teamsToFilter = teamsToFilterListboxValues
         filteredDataFrame = dataFrame[dataFrame["teamNum"].isin(teamsToFilter)]
         filterWindow.destroy()
         selectValue()
