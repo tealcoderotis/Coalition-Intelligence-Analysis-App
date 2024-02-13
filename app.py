@@ -45,13 +45,9 @@ def mergeCsvFiles():
     initalizeDataWindow()
 
 def exportMergedCsv():
-    global dataFrame
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
     if len(fileName) > 0:
-        if teamsToFilter != None:
-            filteredDataFrame.to_csv(fileName, index=False)
-        else:
-            dataFrame.to_csv(fileName, index=False)
+        filterDataFrame(False).to_csv(fileName, index=False)
 
 '''def selectTeam():
     global dataFrame
