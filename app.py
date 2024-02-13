@@ -15,6 +15,19 @@ POINT_VALUES = {
     "trapNotes": 5
 }
 
+def filterDataFrame(hideNoShow):
+    global teamToFilter
+    global filteredDataFrame
+    if teamToFilter != None:
+        dataFrameToUse = filteredDataFrame
+    else:
+        dataFrameToUse = dataFrame
+    if hideNoShow == True:
+        dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+        return dataFrameToDisplay
+    else:
+        return dataFrameToUse
+
 def addCsvFile():
     global filesToMerge
     files = tkinter.filedialog.askopenfilenames(parent=mergeWindow, filetypes=[("CSV File", "*.csv")])
@@ -60,10 +73,7 @@ def selectValue(*args):
     global standardDeviationLabel
     global teamToFilter
     global filteredDataFrame
-    if teamToFilter != None:
-        dataFrameToUse = filteredDataFrame
-    else:
-        dataFrameToUse = dataFrame
+    dataFrameToUse = filterDataFrame(False)
     noShowCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == True].shape[0]
     showCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == False].shape[0]
     totalShowCount = noShowCount + showCount
@@ -86,17 +96,18 @@ def selectValue(*args):
     rawValueDataText.configure(state=tkinter.DISABLED)
 
 def showBoxPlot():
-    global teamToFilter
-    global filteredDataFrame
-    if teamToFilter != None:
-        dataFrameToUse = filteredDataFrame
-    else:
-        dataFrameToUse = dataFrame
-    dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    dataFrameToDisplay = filterDataFrame(True)
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
     columnToDisplay.plot.box()
     pyplot.get_current_fig_manager().set_window_title("Box Plot")
-    pyplot.show()
+    pyplot.show(block=True)
+
+def showLinePlot():
+    dataFrameToDisplay = filterDataFrame(True)
+    columnsToDisplay = dataFrameToDisplay[["roundNum", variableDropdownVariable.get()]]
+    columnsToDisplay.plot.line(x="roundNum", y=variableDropdownVariable.get())
+    pyplot.get_current_fig_manager().set_window_title("Line Graph")
+    pyplot.show(block=True)
 
 def initalizeDataWindow():
     global dataWindow
@@ -145,7 +156,7 @@ def initalizeDataWindow():
     plotButtonContainer = tkinter.Frame(valueContainer)
     boxplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show box plot", command=showBoxPlot)
     boxplotDisplayButton.grid(row=0, column=0)
-    lineplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show line graph")
+    lineplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show line graph", command=showLinePlot)
     lineplotDisplayButton.grid(row=0, column=1)
     plotButtonContainer.grid(row=3, column=0, sticky="NE")
     mainContainer.add(valueContainer, sticky="NESW")
