@@ -18,11 +18,12 @@ POINT_VALUES = {
 def filterDataFrame(hideNoShow):
     global teamsToFilter
     global filteredDataFrame
+    global showNoShowTeamsCheckboxVariable
     if teamsToFilter != None:
         dataFrameToUse = filteredDataFrame
     else:
         dataFrameToUse = dataFrame
-    if hideNoShow == True:
+    if hideNoShow == True and showNoShowTeamsCheckboxVariable.get() == 0:
         dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
         return dataFrameToDisplay
     else:
@@ -51,19 +52,21 @@ def exportMergedCsv():
         filterDataFrame(True).to_csv(fileName, index=False)
 
 def selectValue(*args):
-    global dataFrame
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
     global noShowCountLabel
     global standardDeviationLabel
-    global filteredDataFrame
+    global showNoShowTeamsCheckboxVariable
     dataFrameToUse = filterDataFrame(False)
     noShowCount = dataFrameToUse[dataFrameToUse["noShow"] == True].shape[0]
     showCount = dataFrameToUse[dataFrameToUse["noShow"] == False].shape[0]
     totalShowCount = noShowCount + showCount
-    noShowCountLabel.configure(text=f"{noShowCount} instances without robot\n{showCount} instances with robot\n{totalShowCount} instances in total")
-    dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    noShowCountLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {totalShowCount} rounds in total")
+    if showNoShowTeamsCheckboxVariable.get() == 0:
+        dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    else:
+        dataFrameToDisplay = dataFrameToUse
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
     if columnToDisplay.dtypes == "int64":
         if isnan(columnToDisplay.std()):
@@ -162,6 +165,7 @@ def initalizeDataWindow():
     global rawValueDataText
     global variableDropdown
     global variableDropdownVariable
+    global showNoShowTeamsCheckboxVariable
     global noShowCountLabel
     global standardDeviationLabel
     global plotButtonContainer
@@ -185,27 +189,31 @@ def initalizeDataWindow():
     variableDropdownVariable.trace_add("write", selectValue)
     variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
     variableDropdown.grid(row=0, column=0, sticky="NEW")
-    exportTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
-    exportTeamButton.grid(row=0, column=1)
+    showNoShowTeamsCheckboxVariable = tkinter.IntVar(value=0)
+    showNoShowTeamsCheckboxVariable.trace_add("write", selectValue)
+    showNoShowTeamsCheckbox = tkinter.Checkbutton(upperFrame, text="Show rounds without robot", indicatoron=False, variable=showNoShowTeamsCheckboxVariable)
+    showNoShowTeamsCheckbox.grid(row=0, column=1)
+    selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
+    selectTeamButton.grid(row=0, column=2)
     exportMergedButton = tkinter.Button(upperFrame, text="Export as CSV", command=exportMergedCsv)
-    exportMergedButton.grid(row=0, column=2)
+    exportMergedButton.grid(row=0, column=3)
+    noShowCountLabel = tkinter.Label(upperFrame)
+    noShowCountLabel.grid(row=1, column=0, columnspan=4)
     upperFrame.grid(row=0, column=0, sticky="NEW")
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
-    valueContainer.rowconfigure(1, weight=1)
+    valueContainer.rowconfigure(0, weight=1)
     valueContainer.columnconfigure(0, weight=1)
-    noShowCountLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
-    noShowCountLabel.grid(row=0, column=0, sticky="NEW")
     rawValueDataText = tkinter.Text(valueContainer, wrap=tkinter.NONE)
-    rawValueDataText.grid(row=1, column=0, sticky="NESW")
+    rawValueDataText.grid(row=0, column=0, sticky="NESW")
     standardDeviationLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
-    standardDeviationLabel.grid(row=2, column=0, sticky="NEW")
+    standardDeviationLabel.grid(row=1, column=0, sticky="NEW")
     plotButtonContainer = tkinter.Frame(valueContainer)
     boxplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show box plot", command=showBoxPlot)
     boxplotDisplayButton.grid(row=0, column=0)
     lineplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show line graph", command=showLinePlot)
     lineplotDisplayButton.grid(row=0, column=1)
-    plotButtonContainer.grid(row=3, column=0, sticky="NE")
+    plotButtonContainer.grid(row=2, column=0, sticky="NE")
     mainContainer.add(valueContainer, sticky="NESW")
     pointContainer = tkinter.Frame()
     mainContainer.add(pointContainer, sticky="NESW")
@@ -253,12 +261,12 @@ def selectTeam():
         teamsToFilterListboxValues = []
     teamsToFilterListbox.grid(row=0, column=0, sticky="NESW", columnspan=4)
     addTeamToFilterEntry = tkinter.Entry(filterWindow)
-    addTeamToFilterEntry.grid(row=1, column=0, sticky="EW")
+    addTeamToFilterEntry.grid(row=2, column=0, sticky="EW")
     addTeamToFilterButton = tkinter.Button(filterWindow, text="Add team", command=addTeamToFilter)
-    addTeamToFilterButton.grid(row=1, column=1)
+    addTeamToFilterButton.grid(row=2, column=1)
     saveTeamToFilterButton = tkinter.Button(filterWindow, text="Save", command=saveTeamsToFilter)
-    saveTeamToFilterButton.grid(row=1, column=2)
+    saveTeamToFilterButton.grid(row=2, column=2)
     showAllTeamsToFilterButton = tkinter.Button(filterWindow, text="Show all teams", command=showAllTeams)
-    showAllTeamsToFilterButton.grid(row=1, column=3)
+    showAllTeamsToFilterButton.grid(row=2, column=3)
 
 initalizeMergeWindow()
