@@ -42,6 +42,7 @@ def mergeCsvFiles():
     for i in range(1, len(filesToMerge)):
         data = pandas.read_csv(filesToMerge[i])
         dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
+    dataFrame.sort_values("roundNum", inplace=True)
     initalizeDataWindow()
 
 def exportMergedCsv():
