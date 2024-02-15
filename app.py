@@ -49,17 +49,6 @@ def exportMergedCsv():
     if len(fileName) > 0:
         filterDataFrame(True).to_csv(fileName, index=False)
 
-'''def selectTeam():
-    global dataFrame
-    global filteredDataFrame
-    global teamToFilter
-    teamToFilter = tkinter.simpledialog.askinteger(parent=dataWindow, title="Select Team", prompt="Enter the team number. Select cancel to show all teams.", minvalue=1)
-    if teamToFilter != None:
-        filteredDataFrame = dataFrame[dataFrame["teamNum"].values == teamToFilter]
-    else:
-        filteredDataFrame = None
-    selectValue()'''
-
 def selectValue(*args):
     global dataFrame
     global rawValueDataText
@@ -69,8 +58,8 @@ def selectValue(*args):
     global standardDeviationLabel
     global filteredDataFrame
     dataFrameToUse = filterDataFrame(False)
-    noShowCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == True].shape[0]
-    showCount = dataFrameToUse.loc[dataFrameToUse["noShow"] == False].shape[0]
+    noShowCount = dataFrameToUse[dataFrameToUse["noShow"] == True].shape[0]
+    showCount = dataFrameToUse[dataFrameToUse["noShow"] == False].shape[0]
     totalShowCount = noShowCount + showCount
     noShowCountLabel.configure(text=f"{noShowCount} instances without robot\n{showCount} instances with robot\n{totalShowCount} instances in total")
     dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
@@ -81,7 +70,10 @@ def selectValue(*args):
         else:
             standardDeviationLabel.configure(text=f"Standard deviation: {columnToDisplay.std()}")
             standardDeviationLabel.grid()
-        plotButtonContainer.grid()
+        if columnToDisplay.shape[0] > 0:
+            plotButtonContainer.grid()
+        else:
+            plotButtonContainer.grid_remove()
     else:
         standardDeviationLabel.grid_remove()
         plotButtonContainer.grid_remove()
@@ -93,16 +85,42 @@ def selectValue(*args):
 def showBoxPlot():
     dataFrameToDisplay = filterDataFrame(True)
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
-    columnToDisplay.plot.box()
+    teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
+    if (len(teams) == 1):
+        axies = pyplot.subplots(nrows=1, ncols=1)[1]
+        columnToDisplay.plot.box(ax=axies)
+        axies.set_title("Team" + str(teams[0]))
+    else:
+        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1)[1]
+        columnToDisplay.plot.box(ax=axies[0])
+        axies[0].set_title("All Teams")
+        for i in range(len(teams)):
+            teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
+            columnToDisplay = teamDataFrame[variableDropdownVariable.get()]
+            columnToDisplay.plot.box(ax=axies[i+1])
+            axies[i+1].set_title("Team " + str(teams[i]))
     pyplot.get_current_fig_manager().set_window_title("Box Plot")
-    pyplot.show(block=True)
+    pyplot.show()
 
 def showLinePlot():
     dataFrameToDisplay = filterDataFrame(True)
     columnsToDisplay = dataFrameToDisplay[["roundNum", variableDropdownVariable.get()]]
-    columnsToDisplay.plot.line(x="roundNum", y=variableDropdownVariable.get())
+    teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
+    if (len(teams) == 1):
+        axies = pyplot.subplots(nrows=1, ncols=1)[1]
+        columnsToDisplay.plot.line(ax=axies, x="roundNum", y=variableDropdownVariable.get())
+        axies.set_title("Team" + str(teams[0]))
+    else:
+        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1)[1]
+        columnsToDisplay.plot.line(ax=axies[0], x="roundNum", y=variableDropdownVariable.get())
+        axies[0].set_title("All Teams")
+        for i in range(len(teams)):
+            teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
+            columnsToDisplay = teamDataFrame[["roundNum", variableDropdownVariable.get()]]
+            columnsToDisplay.plot.line(ax=axies[i+1], x="roundNum", y=variableDropdownVariable.get())
+            axies[i+1].set_title("Team " + str(teams[i]))
     pyplot.get_current_fig_manager().set_window_title("Line Graph")
-    pyplot.show(block=True)
+    pyplot.show()
 
 def addTeamToFilter():
     global teamsToFilterListboxValues
