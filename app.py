@@ -12,7 +12,13 @@ POINT_VALUES = {
     "speakerNotes": 2,
     "auto_speakerNotes": 5,
     "ampSpeakerNotes": 5,
-    "trapNotes": 5
+    "trapNotes": 5,
+    "climb": [0, 1, 3, 5]
+}
+
+DROPDOWN_VALUES = {
+    "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
+    "climb": ["No climb", "Parked", "Climbed", "Harmony"]
 }
 
 def replaceDataFrameWithPointValue(data, pointValue, dataType):
@@ -22,7 +28,13 @@ def replaceDataFrameWithPointValue(data, pointValue, dataType):
         else:
             return 0
     if dataType == "int64":
-        return data * pointValue
+        if type(pointValue) == list:
+            return pointValue[data]
+        else:
+            return data * pointValue
+    
+def replaceDataFrameWithDropdownValue(data, dropdownList):
+    return dropdownList[data]
 
 def filterDataFrame(hideNoShow, usePointDataFrame):
     global teamsToFilter
@@ -54,9 +66,11 @@ def addCsvFile():
 
 def removeCsvFile():
     global filesToMerge
-    if len(filesToMerge) > 0:
+    try:
         del filesToMerge [csvFileListbox.curselection()[0]]
         csvFileListbox.configure(listvariable=tkinter.StringVar(value=filesToMerge))
+    except:
+        pass
 
 def mergeCsvFiles():
     global dataFrame
@@ -74,6 +88,9 @@ def mergeCsvFiles():
                 pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(POINT_VALUES[column], pointDataFrame[column].dtypes,))
             elif column != "teamNum" and column != "roundNum" and column != "noShow":
                 pointDataFrame.drop(columns=column, inplace=True)
+        for column in dataFrame.columns:
+            if column in DROPDOWN_VALUES:
+                dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(DROPDOWN_VALUES[column],))
         initalizeDataWindow()
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
@@ -214,13 +231,15 @@ def addTeamToFilter():
         else:
             tkinter.messagebox.showerror("Illegal Value", "There is no data for this team")
     else:
-        tkinter.messagebox.showerror("Illegal Value", "Must be a number greater than zero")
+        tkinter.messagebox.showerror("Illegal Value", "Must be a positive number")
 
 def removeTeamFromFilter():
     global teamsToFilterListboxValues
-    if len(teamsToFilterListboxValues) > 0:
+    try:
         del teamsToFilterListboxValues[teamsToFilterListbox.curselection()[0]]
         teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
+    except:
+        pass
 
 def saveTeamsToFilter():
     global teamsToFilterListboxValues
@@ -335,13 +354,15 @@ def initalizeMergeWindow():
     mergeWindow.columnconfigure(0, weight=1)
     mergeWindow.rowconfigure(0, weight=1)
     csvFileListbox = tkinter.Listbox(mergeWindow)
-    csvFileListbox.grid(row=0, column=0, sticky="NESW", columnspan=4)
-    addCsvFileButton = tkinter.Button(mergeWindow, text="Add CSV file", command=addCsvFile)
-    addCsvFileButton.grid(row=1, column=1)
-    removeCsvFileButton = tkinter.Button(mergeWindow, text="Remove CSV file", command=removeCsvFile)
-    removeCsvFileButton.grid(row=1, column=2)
-    displayDataButton = tkinter.Button(mergeWindow, text="Done", command=mergeCsvFiles)
-    displayDataButton.grid(row=1, column=3)
+    csvFileListbox.grid(row=0, column=0, sticky="NESW")
+    lowerFrame = tkinter.Frame(mergeWindow)
+    addCsvFileButton = tkinter.Button(lowerFrame, text="Add CSV file", command=addCsvFile)
+    addCsvFileButton.grid(row=0, column=0)
+    removeCsvFileButton = tkinter.Button(lowerFrame, text="Remove CSV file", command=removeCsvFile)
+    removeCsvFileButton.grid(row=0, column=1)
+    displayDataButton = tkinter.Button(lowerFrame, text="Done", command=mergeCsvFiles)
+    displayDataButton.grid(row=0, column=2)
+    lowerFrame.grid(row=1, column=0, sticky="E")
     mergeWindow.mainloop()
 
 def selectTeam():
@@ -363,16 +384,19 @@ def selectTeam():
         teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
     else:
         teamsToFilterListboxValues = []
-    teamsToFilterListbox.grid(row=0, column=0, sticky="NESW", columnspan=5)
-    addTeamToFilterEntry = tkinter.Entry(filterWindow)
-    addTeamToFilterEntry.grid(row=2, column=0, sticky="EW")
-    addTeamToFilterButton = tkinter.Button(filterWindow, text="Add team", command=addTeamToFilter)
-    addTeamToFilterButton.grid(row=2, column=1)
-    removeTeamToFilterButton = tkinter.Button(filterWindow, text="Remove team", command=removeTeamFromFilter)
-    removeTeamToFilterButton.grid(row=2, column=2)
-    saveTeamToFilterButton = tkinter.Button(filterWindow, text="Save", command=saveTeamsToFilter)
-    saveTeamToFilterButton.grid(row=2, column=3)
-    showAllTeamsToFilterButton = tkinter.Button(filterWindow, text="Show all teams", command=showAllTeams)
-    showAllTeamsToFilterButton.grid(row=2, column=4)
+    teamsToFilterListbox.grid(row=0, column=0, sticky="NESW")
+    lowerFrame = tkinter.Frame(filterWindow)
+    lowerFrame.columnconfigure(0, weight=1)
+    addTeamToFilterEntry = tkinter.Entry(lowerFrame)
+    addTeamToFilterEntry.grid(row=0, column=0, sticky="EW")
+    addTeamToFilterButton = tkinter.Button(lowerFrame, text="Add team", command=addTeamToFilter)
+    addTeamToFilterButton.grid(row=0, column=1)
+    removeTeamToFilterButton = tkinter.Button(lowerFrame, text="Remove team", command=removeTeamFromFilter)
+    removeTeamToFilterButton.grid(row=0, column=2)
+    saveTeamToFilterButton = tkinter.Button(lowerFrame, text="Save", command=saveTeamsToFilter)
+    saveTeamToFilterButton.grid(row=0, column=3)
+    showAllTeamsToFilterButton = tkinter.Button(lowerFrame, text="Show all teams", command=showAllTeams)
+    showAllTeamsToFilterButton.grid(row=0, column=4)
+    lowerFrame.grid(row=1, column=0, sticky="EW")
 
 initalizeMergeWindow()
