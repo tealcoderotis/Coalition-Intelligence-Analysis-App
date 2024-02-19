@@ -15,14 +15,30 @@ POINT_VALUES = {
     "trapNotes": 5
 }
 
-def filterDataFrame(hideNoShow):
+def replaceDataFrameWithPointValue(data, pointValue, dataType):
+    if dataType == "bool":
+        if data == True:
+            return pointValue
+        else:
+            return 0
+    if dataType == "int64":
+        return data * pointValue
+
+def filterDataFrame(hideNoShow, usePointDataFrame):
     global teamsToFilter
     global filteredDataFrame
+    global filteredPointDataFrame
     global showNoShowTeamsCheckboxVariable
     if teamsToFilter != None:
-        dataFrameToUse = filteredDataFrame
+        if usePointDataFrame:
+            dataFrameToUse = filteredPointDataFrame
+        else:
+            dataFrameToUse = filteredDataFrame
     else:
-        dataFrameToUse = dataFrame
+        if usePointDataFrame:
+            dataFrameToUse = pointDataFrame
+        else:
+            dataFrameToUse = dataFrame
     if hideNoShow == True and showNoShowTeamsCheckboxVariable.get() == 0:
         dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
         return dataFrameToDisplay
@@ -38,6 +54,7 @@ def addCsvFile():
 
 def mergeCsvFiles():
     global dataFrame
+    global pointDataFrame
     global filesToMerge
     dataFrame = pandas.read_csv(filesToMerge[0])
     for i in range(1, len(filesToMerge)):
@@ -45,29 +62,39 @@ def mergeCsvFiles():
         dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
     dataFrame.sort_values("roundNum", inplace=True)
     pointDataFrame = dataFrame.copy(deep=True)
+    for column in pointDataFrame.columns:
+        if column in POINT_VALUES:
+            pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(POINT_VALUES[column], pointDataFrame[column].dtypes,))
+        elif column != "teamNum" and column != "roundNum" and column != "noShow":
+            pointDataFrame.drop(columns=column, inplace=True)
     initalizeDataWindow()
 
 def exportMergedCsv():
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
     if len(fileName) > 0:
-        filterDataFrame(True).to_csv(fileName, index=False)
+        filterDataFrame(True, False).to_csv(fileName, index=False)
 
 def selectValue(*args):
     global rawValueDataText
+    global pointRawValueDataText
     global variableDropdown
     global variableDropdownVariable
     global noShowCountLabel
     global standardDeviationLabel
+    global pointStandardDeviationLabel
     global showNoShowTeamsCheckboxVariable
-    dataFrameToUse = filterDataFrame(False)
+    dataFrameToUse = filterDataFrame(False, False)
+    pointDataFrameToUse = filterDataFrame(False, True)
     noShowCount = dataFrameToUse[dataFrameToUse["noShow"] == True].shape[0]
     showCount = dataFrameToUse[dataFrameToUse["noShow"] == False].shape[0]
     totalShowCount = noShowCount + showCount
     noShowCountLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {totalShowCount} rounds in total")
     if showNoShowTeamsCheckboxVariable.get() == 0:
         dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+        pointDataFrameToDisplay = pointDataFrameToUse[pointDataFrameToUse["noShow"].values == False]
     else:
         dataFrameToDisplay = dataFrameToUse
+        pointDataFrameToDisplay = pointDataFrameToUse
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
     if columnToDisplay.dtypes == "int64":
         if isnan(columnToDisplay.std()):
@@ -84,11 +111,43 @@ def selectValue(*args):
         plotButtonContainer.grid_remove()
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
-    rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+    if showNoShowTeamsCheckboxVariable.get() == 0:
+        rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+    else:
+        rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
     rawValueDataText.configure(state=tkinter.DISABLED)
+    if variableDropdownVariable.get() in pointDataFrame.columns:
+        pointColumnToDisplay = pointDataFrameToDisplay[variableDropdownVariable.get()]
+        if pointColumnToDisplay.dtypes == "int64":
+            if isnan(pointColumnToDisplay.std()):
+                pointStandardDeviationLabel.grid_remove()
+            else:
+                pointStandardDeviationLabel.configure(text=f"Standard deviation: {pointColumnToDisplay.std()}")
+                pointStandardDeviationLabel.grid()
+            if pointColumnToDisplay.shape[0] > 0:
+                pointPlotButtonContainer.grid()
+            else:
+                pointPlotButtonContainer.grid_remove()
+        else:
+            pointStandardDeviationLabel.grid_remove()
+            pointPlotButtonContainer.grid_remove()
+        pointRawValueDataText.configure(state=tkinter.NORMAL)
+        pointRawValueDataText.delete("1.0", tkinter.END)
+        if showNoShowTeamsCheckboxVariable.get() == 0:
+            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+        else:
+            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
+        pointRawValueDataText.configure(state=tkinter.DISABLED)
+    else:
+        pointStandardDeviationLabel.grid_remove()
+        pointPlotButtonContainer.grid_remove()
+        pointRawValueDataText.configure(state=tkinter.NORMAL)
+        pointRawValueDataText.delete("1.0", tkinter.END)
+        pointRawValueDataText.insert(tkinter.END, "This item has no scoring attached to it")
+        pointRawValueDataText.configure(state=tkinter.DISABLED)
 
-def showBoxPlot():
-    dataFrameToDisplay = filterDataFrame(True)
+def showBoxPlot(usePointValues=False):
+    dataFrameToDisplay = filterDataFrame(True, usePointValues)
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
     teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
@@ -107,8 +166,11 @@ def showBoxPlot():
     pyplot.get_current_fig_manager().set_window_title("Box Plot")
     pyplot.show()
 
-def showLinePlot():
-    dataFrameToDisplay = filterDataFrame(True)
+def showPointBoxPlot():
+    showBoxPlot(True)
+
+def showLinePlot(usePointValues=False):
+    dataFrameToDisplay = filterDataFrame(True, usePointValues)
     columnsToDisplay = dataFrameToDisplay[["roundNum", variableDropdownVariable.get()]]
     teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
@@ -127,6 +189,9 @@ def showLinePlot():
     pyplot.get_current_fig_manager().set_window_title("Line Graph")
     pyplot.show()
 
+def showPointLinePlot():
+    showLinePlot(True)
+
 def addTeamToFilter():
     global teamsToFilterListboxValues
     global teamsToFilterListboxValues
@@ -144,9 +209,11 @@ def saveTeamsToFilter():
     global teamsToFilterListboxValues
     global teamsToFilter
     global filteredDataFrame
+    global filteredPointDataFrame
     if len(teamsToFilterListboxValues) > 0:
         teamsToFilter = teamsToFilterListboxValues.copy()
         filteredDataFrame = dataFrame[dataFrame["teamNum"].isin(teamsToFilter)]
+        filteredPointDataFrame = pointDataFrame[dataFrame["teamNum"].isin(teamsToFilter)]
         filterWindow.destroy()
         selectValue()
     else:
@@ -164,20 +231,24 @@ def initalizeDataWindow():
     global dataWindow
     global dataFrame
     global rawValueDataText
+    global pointRawValueDataText
     global variableDropdown
     global variableDropdownVariable
     global showNoShowTeamsCheckboxVariable
     global noShowCountLabel
     global standardDeviationLabel
+    global pointStandardDeviationLabel
     global plotButtonContainer
+    global pointPlotButtonContainer
     global teamsToFilter
     global filteredDataFrame
+    global filteredPointDataFrame
     teamsToFilter = None
     filteredDataFrame = None
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
     dataWindow.title("Coalition Intelligence Analysis App")
-    dataWindow.geometry("800x480")
+    dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
     dataWindow.rowconfigure(1, weight=1)
     upperFrame = tkinter.Frame()
@@ -224,9 +295,9 @@ def initalizeDataWindow():
     pointStandardDeviationLabel = tkinter.Label(pointContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
     pointStandardDeviationLabel.grid(row=1, column=0, sticky="NEW")
     pointPlotButtonContainer = tkinter.Frame(pointContainer)
-    pointBoxplotDisplayButton = tkinter.Button(pointPlotButtonContainer, text="Show box plot")
+    pointBoxplotDisplayButton = tkinter.Button(pointPlotButtonContainer, text="Show box plot", command=showPointBoxPlot)
     pointBoxplotDisplayButton.grid(row=0, column=0)
-    pointLineplotDisplayButton = tkinter.Button(pointPlotButtonContainer, text="Show line graph")
+    pointLineplotDisplayButton = tkinter.Button(pointPlotButtonContainer, text="Show line graph", command=showPointLinePlot)
     pointLineplotDisplayButton.grid(row=0, column=1)
     pointPlotButtonContainer.grid(row=2, column=0, sticky="NE")
     mainContainer.add(pointContainer, sticky="NESW")
