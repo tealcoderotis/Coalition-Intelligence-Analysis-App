@@ -4,22 +4,7 @@ from matplotlib import pyplot
 import tkinter
 import tkinter.filedialog
 import tkinter.messagebox
-
-POINT_VALUES = {
-    "auto_leave": 2,
-    "ampNotes": 1,
-    "auto_ampNotes": 2,
-    "speakerNotes": 2,
-    "auto_speakerNotes": 5,
-    "ampSpeakerNotes": 5,
-    "trapNotes": 5,
-    "climb": [0, 1, 3, 5]
-}
-
-DROPDOWN_VALUES = {
-    "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
-    "climb": ["No climb", "Parked", "Climbed", "Harmony"]
-}
+import json
 
 def replaceDataFrameWithPointValue(data, pointValue, dataType):
     if dataType == "bool":
@@ -84,13 +69,13 @@ def mergeCsvFiles():
         dataFrame.sort_values("roundNum", inplace=True)
         pointDataFrame = dataFrame.copy(deep=True)
         for column in pointDataFrame.columns:
-            if column in POINT_VALUES:
-                pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(POINT_VALUES[column], pointDataFrame[column].dtypes,))
+            if column in pointValues:
+                pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
             elif column != "teamNum" and column != "roundNum" and column != "noShow":
                 pointDataFrame.drop(columns=column, inplace=True)
         for column in dataFrame.columns:
-            if column in DROPDOWN_VALUES:
-                dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(DROPDOWN_VALUES[column],))
+            if column in dropdownValues:
+                dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
         initalizeDataWindow()
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
@@ -347,6 +332,13 @@ def initalizeMergeWindow():
     global filesToMerge
     global mergeWindow
     global csvFileListbox
+    global pointValues
+    global dropdownValues
+    jsonFile = open("config.json", mode="r")
+    jsonValues = json.load(jsonFile)
+    jsonFile.close()
+    pointValues = jsonValues["pointValues"]
+    dropdownValues = jsonValues["dropdownValues"]
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.title("Merge CSV Files")

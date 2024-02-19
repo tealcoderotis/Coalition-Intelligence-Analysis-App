@@ -1,0 +1,16 @@
+{
+    "pointValues": {
+        "auto_leave": 2,
+        "ampNotes": 1,
+        "auto_ampNotes": 2,
+        "speakerNotes": 2,
+        "auto_speakerNotes": 5,
+        "ampSpeakerNotes": 5,
+        "trapNotes": 5,
+        "climb": [0, 1, 3, 5]
+    },
+    "dropdownValues": {
+        "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
+        "climb": ["No climb", "Parked", "Climbed", "Harmony"]
+    }
+}
