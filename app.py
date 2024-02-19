@@ -69,10 +69,13 @@ def mergeCsvFiles():
             pointDataFrame.drop(columns=column, inplace=True)
     initalizeDataWindow()
 
-def exportMergedCsv():
+def exportCsv(usePointValues=False):
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
     if len(fileName) > 0:
-        filterDataFrame(True, False).to_csv(fileName, index=False)
+        filterDataFrame(True, usePointValues).to_csv(fileName, index=False)
+
+def exportPointCsv():
+    exportCsv(True)
 
 def selectValue(*args):
     global rawValueDataText
@@ -250,7 +253,7 @@ def initalizeDataWindow():
     dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
-    dataWindow.rowconfigure(1, weight=1)
+    dataWindow.rowconfigure(2, weight=1)
     upperFrame = tkinter.Frame()
     upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
@@ -267,11 +270,13 @@ def initalizeDataWindow():
     showNoShowTeamsCheckbox.grid(row=0, column=1)
     selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
     selectTeamButton.grid(row=0, column=2)
-    exportMergedButton = tkinter.Button(upperFrame, text="Export as CSV", command=exportMergedCsv)
-    exportMergedButton.grid(row=0, column=3)
-    noShowCountLabel = tkinter.Label(upperFrame)
-    noShowCountLabel.grid(row=1, column=0, columnspan=4)
+    exportButton = tkinter.Button(upperFrame, text="Export values as CSV", command=exportCsv)
+    exportButton.grid(row=0, column=3)
+    pointExportButton = tkinter.Button(upperFrame, text="Export scores as CSV", command=exportPointCsv)
+    pointExportButton.grid(row=0, column=4)
     upperFrame.grid(row=0, column=0, sticky="NEW")
+    noShowCountLabel = tkinter.Label(dataWindow)
+    noShowCountLabel.grid(row=1, column=0)
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
     valueContainer.rowconfigure(0, weight=1)
@@ -301,7 +306,7 @@ def initalizeDataWindow():
     pointLineplotDisplayButton.grid(row=0, column=1)
     pointPlotButtonContainer.grid(row=2, column=0, sticky="NE")
     mainContainer.add(pointContainer, sticky="NESW")
-    mainContainer.grid(row=1, column=0, sticky="NESW")
+    mainContainer.grid(row=2, column=0, sticky="NESW")
     selectValue()
     dataWindow.mainloop()
 
