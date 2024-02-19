@@ -52,22 +52,31 @@ def addCsvFile():
         filesToMerge.append(file)
     csvFileListbox.configure(listvariable=tkinter.StringVar(value=filesToMerge))
 
+def removeCsvFile():
+    global filesToMerge
+    if len(filesToMerge) > 0:
+        del filesToMerge [csvFileListbox.curselection()[0]]
+        csvFileListbox.configure(listvariable=tkinter.StringVar(value=filesToMerge))
+
 def mergeCsvFiles():
     global dataFrame
     global pointDataFrame
     global filesToMerge
-    dataFrame = pandas.read_csv(filesToMerge[0])
-    for i in range(1, len(filesToMerge)):
-        data = pandas.read_csv(filesToMerge[i])
-        dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
-    dataFrame.sort_values("roundNum", inplace=True)
-    pointDataFrame = dataFrame.copy(deep=True)
-    for column in pointDataFrame.columns:
-        if column in POINT_VALUES:
-            pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(POINT_VALUES[column], pointDataFrame[column].dtypes,))
-        elif column != "teamNum" and column != "roundNum" and column != "noShow":
-            pointDataFrame.drop(columns=column, inplace=True)
-    initalizeDataWindow()
+    if len(filesToMerge) > 0:
+        dataFrame = pandas.read_csv(filesToMerge[0])
+        for i in range(1, len(filesToMerge)):
+            data = pandas.read_csv(filesToMerge[i])
+            dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
+        dataFrame.sort_values("roundNum", inplace=True)
+        pointDataFrame = dataFrame.copy(deep=True)
+        for column in pointDataFrame.columns:
+            if column in POINT_VALUES:
+                pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(POINT_VALUES[column], pointDataFrame[column].dtypes,))
+            elif column != "teamNum" and column != "roundNum" and column != "noShow":
+                pointDataFrame.drop(columns=column, inplace=True)
+        initalizeDataWindow()
+    else:
+        tkinter.messagebox.showerror("Error", "No CSV files selected")
 
 def exportCsv(usePointValues=False):
     fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
@@ -197,7 +206,6 @@ def showPointLinePlot():
 
 def addTeamToFilter():
     global teamsToFilterListboxValues
-    global teamsToFilterListboxValues
     if addTeamToFilterEntry.get().isnumeric():
         if int(addTeamToFilterEntry.get()) in dataFrame["teamNum"].values:
             teamsToFilterListboxValues.append(int(addTeamToFilterEntry.get()))
@@ -207,6 +215,12 @@ def addTeamToFilter():
             tkinter.messagebox.showerror("Illegal Value", "There is no data for this team")
     else:
         tkinter.messagebox.showerror("Illegal Value", "Must be a number greater than zero")
+
+def removeTeamFromFilter():
+    global teamsToFilterListboxValues
+    if len(teamsToFilterListboxValues) > 0:
+        del teamsToFilterListboxValues[teamsToFilterListbox.curselection()[0]]
+        teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
 
 def saveTeamsToFilter():
     global teamsToFilterListboxValues
@@ -321,12 +335,13 @@ def initalizeMergeWindow():
     mergeWindow.columnconfigure(0, weight=1)
     mergeWindow.rowconfigure(0, weight=1)
     csvFileListbox = tkinter.Listbox(mergeWindow)
-    csvFileListbox.grid(row=0, column=0, sticky="NESW", columnspan=3)
+    csvFileListbox.grid(row=0, column=0, sticky="NESW", columnspan=4)
     addCsvFileButton = tkinter.Button(mergeWindow, text="Add CSV file", command=addCsvFile)
     addCsvFileButton.grid(row=1, column=1)
-    #TODO Display an error message when there is no data or CSV files selected
+    removeCsvFileButton = tkinter.Button(mergeWindow, text="Remove CSV file", command=removeCsvFile)
+    removeCsvFileButton.grid(row=1, column=2)
     displayDataButton = tkinter.Button(mergeWindow, text="Done", command=mergeCsvFiles)
-    displayDataButton.grid(row=1, column=2)
+    displayDataButton.grid(row=1, column=3)
     mergeWindow.mainloop()
 
 def selectTeam():
@@ -348,14 +363,16 @@ def selectTeam():
         teamsToFilterListbox.configure(listvariable=tkinter.StringVar(value=teamsToFilterListboxValues))
     else:
         teamsToFilterListboxValues = []
-    teamsToFilterListbox.grid(row=0, column=0, sticky="NESW", columnspan=4)
+    teamsToFilterListbox.grid(row=0, column=0, sticky="NESW", columnspan=5)
     addTeamToFilterEntry = tkinter.Entry(filterWindow)
     addTeamToFilterEntry.grid(row=2, column=0, sticky="EW")
     addTeamToFilterButton = tkinter.Button(filterWindow, text="Add team", command=addTeamToFilter)
     addTeamToFilterButton.grid(row=2, column=1)
+    removeTeamToFilterButton = tkinter.Button(filterWindow, text="Remove team", command=removeTeamFromFilter)
+    removeTeamToFilterButton.grid(row=2, column=2)
     saveTeamToFilterButton = tkinter.Button(filterWindow, text="Save", command=saveTeamsToFilter)
-    saveTeamToFilterButton.grid(row=2, column=2)
+    saveTeamToFilterButton.grid(row=2, column=3)
     showAllTeamsToFilterButton = tkinter.Button(filterWindow, text="Show all teams", command=showAllTeams)
-    showAllTeamsToFilterButton.grid(row=2, column=3)
+    showAllTeamsToFilterButton.grid(row=2, column=4)
 
 initalizeMergeWindow()
