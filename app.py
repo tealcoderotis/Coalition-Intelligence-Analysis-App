@@ -62,21 +62,24 @@ def mergeCsvFiles():
     global pointDataFrame
     global filesToMerge
     if len(filesToMerge) > 0:
-        dataFrame = pandas.read_csv(filesToMerge[0])
-        for i in range(1, len(filesToMerge)):
-            data = pandas.read_csv(filesToMerge[i])
-            dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
-        dataFrame.sort_values("roundNum", inplace=True)
-        pointDataFrame = dataFrame.copy(deep=True)
-        for column in pointDataFrame.columns:
-            if column in pointValues:
-                pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
-            elif column != "teamNum" and column != "roundNum" and column != "noShow":
-                pointDataFrame.drop(columns=column, inplace=True)
-        for column in dataFrame.columns:
-            if column in dropdownValues:
-                dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
-        initalizeDataWindow()
+        try:
+            dataFrame = pandas.read_csv(filesToMerge[0])
+            for i in range(1, len(filesToMerge)):
+                data = pandas.read_csv(filesToMerge[i])
+                dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
+            dataFrame.sort_values("roundNum", inplace=True)
+            pointDataFrame = dataFrame.copy(deep=True)
+            for column in pointDataFrame.columns:
+                if column in pointValues:
+                    pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
+                elif column != "teamNum" and column != "roundNum" and column != "noShow":
+                    pointDataFrame.drop(columns=column, inplace=True)
+            for column in dataFrame.columns:
+                if column in dropdownValues:
+                    dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
+            initalizeDataWindow()
+        except:
+            tkinter.messagebox.showerror("Error", "Failed to load one or more CSV files")
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
 
@@ -334,11 +337,6 @@ def initalizeMergeWindow():
     global csvFileListbox
     global pointValues
     global dropdownValues
-    jsonFile = open("config.json", mode="r")
-    jsonValues = json.load(jsonFile)
-    jsonFile.close()
-    pointValues = jsonValues["pointValues"]
-    dropdownValues = jsonValues["dropdownValues"]
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.title("Merge CSV Files")
@@ -355,6 +353,24 @@ def initalizeMergeWindow():
     displayDataButton = tkinter.Button(lowerFrame, text="Done", command=mergeCsvFiles)
     displayDataButton.grid(row=0, column=2)
     lowerFrame.grid(row=1, column=0, sticky="E")
+    try:
+        jsonFile = open("config.json", mode="r")
+        jsonValues = json.load(jsonFile)
+        jsonFile.close()
+        if "pointValues" in jsonValues:
+            pointValues = jsonValues["pointValues"]
+        else:
+            pointValues = {}
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+        if "dropdownValues" in jsonValues:
+            dropdownValues = jsonValues["dropdownValues"]
+        else:
+            dropdownValues = {}
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+    except:
+        pointValues = {}
+        dropdownValues = {}
+        tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
     mergeWindow.mainloop()
 
 def selectTeam():
