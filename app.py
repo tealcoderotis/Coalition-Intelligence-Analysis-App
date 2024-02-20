@@ -5,6 +5,14 @@ import tkinter
 import tkinter.filedialog
 import tkinter.messagebox
 import json
+import sys
+import os
+
+try:
+    import pyi_splash
+    pyi_splash.close()
+except:
+    pass
 
 def replaceDataFrameWithPointValue(data, pointValue, dataType):
     if dataType == "bool":
@@ -251,6 +259,12 @@ def showAllTeams():
     filterWindow.destroy()
     selectValue()
 
+def getIcon():
+    if getattr(sys, "frozen", False):
+        return os.path.join(sys._MEIPASS, "icon.ico")
+    else:
+        return "icon.ico"
+
 def initalizeDataWindow():
     global dataWindow
     global dataFrame
@@ -271,6 +285,7 @@ def initalizeDataWindow():
     filteredDataFrame = None
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
+    dataWindow.iconbitmap(default=getIcon())
     dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
@@ -339,6 +354,7 @@ def initalizeMergeWindow():
     global dropdownValues
     filesToMerge = []
     mergeWindow = tkinter.Tk()
+    mergeWindow.iconbitmap(default=getIcon())
     mergeWindow.title("Merge CSV Files")
     mergeWindow.geometry("500x300")
     mergeWindow.columnconfigure(0, weight=1)
