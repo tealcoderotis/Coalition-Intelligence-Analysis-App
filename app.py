@@ -259,6 +259,83 @@ def showAllTeams():
     filterWindow.destroy()
     selectValue()
 
+def teleFlParkConversion(data):
+    if (data == 1):
+        return True
+    else:
+        return False
+    
+def teleIdStageOutcomeConversion(data):
+    if (data == 0 or data == 1):
+        return 0
+    elif (data == 2 or data == 3):
+        return 3
+    else:
+        return ""
+    
+def teleFlSpotlightConversion(data):
+    if (data == 3):
+        return True
+    else:
+        return ""
+
+def convertToCSPFormat():
+    global filesToMerge
+    if len(filesToMerge) > 0:
+        try:
+            oldDataFrame = pandas.read_csv(filesToMerge[0])
+            for i in range(1, len(filesToMerge)):
+                data = pandas.read_csv(filesToMerge[i])
+                oldDataFrame = pandas.concat([dataFrame, data], ignore_index=True)
+            oldDataFrame.sort_values("roundNum", inplace=True)
+            dataFrame = pandas.DataFrame()
+            dataFrame["id"] = ""
+            dataFrame["flUploaded"] = ""
+            dataFrame["txEvent"] = ""
+            dataFrame["txDeviceName"] = ""
+            dataFrame["numMatch"] = oldDataFrame["roundNum"]
+            dataFrame["idAlliance"] = ""
+            dataFrame["idDriveStation"] = ""
+            dataFrame["idTeam"] = oldDataFrame["teamNum"]
+            dataFrame["txScoutName"] = ""
+            dataFrame["idStartPosition"] = ""
+            dataFrame["flRed"] = ""
+            dataFrame["flYellow"] = ""
+            dataFrame["flCrash"] = ""
+            dataFrame["flAutoStop"] = ""
+            dataFrame["autoFlStart"] = ""
+            dataFrame["autoFlBaseLine"] = oldDataFrame["auto_leave"]
+            dataFrame["autoNumCellLoad"] = ""
+            dataFrame["autoFlFoul"] = ""
+            dataFrame["autoFlRobotContact"] = ""
+            dataFrame["autoFlLoseStartObject"] = ""
+            dataFrame["autoFlFail"] = ""
+            dataFrame["autoNumAmpAttempt"] = ""
+            dataFrame["autoNumAmpSuccess"] = oldDataFrame["auto_ampNotes"]
+            dataFrame["autoNumSpeakerAttempt"] = ""
+            dataFrame["autoNumSpeakerSuccess"] = oldDataFrame["auto_speakerNotes"]
+            dataFrame["autoNumTrapAttempt"] = ""
+            dataFrame["autoNumTrapSuccess"] = ""
+            dataFrame["teleNumAmpAttempt"] = ""
+            dataFrame["teleNumAmpSuccess"] = oldDataFrame["ampNotes"]
+            dataFrame["teleNumSpeakerAttempt"] = ""
+            dataFrame["teleNumSpeakerSuccess"] = oldDataFrame["speakerNotes"].add(oldDataFrame["ampSpeakerNotes"])
+            dataFrame["teleNumTrapAttempt"] = ""
+            dataFrame["teleNumTrapSuccess"] = oldDataFrame["trapNotes"]
+            dataFrame["teleFlPark"] = oldDataFrame["climb"].apply(teleFlParkConversion)
+            dataFrame["teleIdStageOutcome"] = oldDataFrame["climb"].apply(teleIdStageOutcomeConversion)
+            dataFrame["teleIdStageClimbSpeed"] = ""
+            dataFrame["teleFlStageAssist"] = ""
+            dataFrame["teleFlSpotlight"] = oldDataFrame["climb"].apply(teleFlSpotlightConversion)
+        except:
+            tkinter.messagebox.showerror("Error", "Failed to load one or more CSV files")
+        else:
+            fileName = tkinter.filedialog.asksaveasfilename(parent=mergeWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
+            if len(fileName) > 0:
+                dataFrame.to_csv(fileName, index=False)
+    else:
+        tkinter.messagebox.showerror("Error", "No CSV files selected")
+
 def getIcon():
     if getattr(sys, "frozen", False):
         return os.path.join(sys._MEIPASS, "icon.ico")
@@ -366,8 +443,10 @@ def initalizeMergeWindow():
     addCsvFileButton.grid(row=0, column=0)
     removeCsvFileButton = tkinter.Button(lowerFrame, text="Remove CSV file", command=removeCsvFile)
     removeCsvFileButton.grid(row=0, column=1)
+    removeCsvFileButton = tkinter.Button(lowerFrame, text="Convert to CSP format", command=convertToCSPFormat)
+    removeCsvFileButton.grid(row=0, column=2)
     displayDataButton = tkinter.Button(lowerFrame, text="Done", command=mergeCsvFiles)
-    displayDataButton.grid(row=0, column=2)
+    displayDataButton.grid(row=0, column=3)
     lowerFrame.grid(row=1, column=0, sticky="E")
     try:
         jsonFile = open("config.json", mode="r")
