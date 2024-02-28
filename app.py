@@ -258,29 +258,14 @@ def showAllTeams():
     filteredDataFrame = None
     filterWindow.destroy()
     selectValue()
-
-def teleFlParkConversion(data):
-    if (data == 1):
-        return True
-    else:
-        return False
     
-def teleIdStageOutcomeConversion(data):
-    if (data == 0 or data == 1):
-        return 0
-    elif (data == 2 or data == 3):
-        return 3
-    else:
-        return ""
-    
-def teleFlSpotlightConversion(data):
-    if (data == 3):
-        return True
-    else:
-        return ""
+def addColumns(dataFrame, columnsToAdd):
+    series = pandas.Series()
+    for column in columnsToAdd:
+        series.add(dataFrame[column])
+    return series
 
 def convertToCSPFormat():
-    global filesToMerge
     if len(filesToMerge) > 0:
         try:
             oldDataFrame = pandas.read_csv(filesToMerge[0])
@@ -289,44 +274,16 @@ def convertToCSPFormat():
                 oldDataFrame = pandas.concat([dataFrame, data], ignore_index=True)
             oldDataFrame.sort_values("roundNum", inplace=True)
             dataFrame = pandas.DataFrame()
-            dataFrame["id"] = ""
-            dataFrame["flUploaded"] = ""
-            dataFrame["txEvent"] = ""
-            dataFrame["txDeviceName"] = ""
-            dataFrame["numMatch"] = oldDataFrame["roundNum"]
-            dataFrame["idAlliance"] = ""
-            dataFrame["idDriveStation"] = ""
-            dataFrame["idTeam"] = oldDataFrame["teamNum"]
-            dataFrame["txScoutName"] = ""
-            dataFrame["idStartPosition"] = ""
-            dataFrame["flRed"] = ""
-            dataFrame["flYellow"] = ""
-            dataFrame["flCrash"] = ""
-            dataFrame["flAutoStop"] = ""
-            dataFrame["autoFlStart"] = ""
-            dataFrame["autoFlBaseLine"] = oldDataFrame["auto_leave"]
-            dataFrame["autoNumCellLoad"] = ""
-            dataFrame["autoFlFoul"] = ""
-            dataFrame["autoFlRobotContact"] = ""
-            dataFrame["autoFlLoseStartObject"] = ""
-            dataFrame["autoFlFail"] = ""
-            dataFrame["autoNumAmpAttempt"] = oldDataFrame["auto_ampNotes"].add(oldDataFrame["auto_ampNotesFail"])
-            dataFrame["autoNumAmpSuccess"] = oldDataFrame["auto_ampNotes"]
-            dataFrame["autoNumSpeakerAttempt"] = oldDataFrame["auto_speakerNotes"].add(oldDataFrame["auto_speakerNotesFail"])
-            dataFrame["autoNumSpeakerSuccess"] = oldDataFrame["auto_speakerNotes"]
-            dataFrame["autoNumTrapAttempt"] = ""
-            dataFrame["autoNumTrapSuccess"] = ""
-            dataFrame["teleNumAmpAttempt"] = oldDataFrame["ampNotes"].add("ampNotesFail")
-            dataFrame["teleNumAmpSuccess"] = oldDataFrame["ampNotes"]
-            dataFrame["teleNumSpeakerAttempt"] = oldDataFrame["speakerNotes"].add("speakerNotesFail")
-            dataFrame["teleNumSpeakerSuccess"] = oldDataFrame["speakerNotes"]
-            dataFrame["teleNumTrapAttempt"] = oldDataFrame["trapNotes"].add("trapNotesFail")
-            dataFrame["teleNumTrapSuccess"] = oldDataFrame["trapNotes"]
-            dataFrame["teleFlPark"] = oldDataFrame["climb"].apply(teleFlParkConversion)
-            dataFrame["teleIdStageOutcome"] = oldDataFrame["climb"].apply(teleIdStageOutcomeConversion)
-            dataFrame["teleIdStageClimbSpeed"] = ""
-            dataFrame["teleFlStageAssist"] = ""
-            dataFrame["teleFlSpotlight"] = oldDataFrame["climb"].apply(teleFlSpotlightConversion)
+            for newValue, conversionValue in cspConverterValues.items():
+                if type(conversionValue) == str:
+                    if conversionValue != "":
+                        dataFrame[newValue] = oldDataFrame[conversionValue]
+                    else:
+                        dataFrame[newValue] = ""
+                elif type(conversionValue) == list:
+                    dataFrame[newValue] = addColumns(oldDataFrame, conversionValue)
+                elif type(conversionValue) == dict:
+                    dataFrame[newValue] = oldDataFrame[conversionValue["value"]].apply(replaceDataFrameWithDropdownValue, args=(conversionValue["dropdownValues"],))
         except:
             tkinter.messagebox.showerror("Error", "Failed to load one or more CSV files")
         else:
@@ -432,6 +389,7 @@ def initalizeMergeWindow():
     global pointValues
     global dropdownValues
     global valuesToHide
+    global cspConverterValues
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.iconbitmap(default=getIcon())
@@ -459,21 +417,28 @@ def initalizeMergeWindow():
             pointValues = jsonValues["pointValues"]
         else:
             pointValues = {}
-            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
         if "dropdownValues" in jsonValues:
             dropdownValues = jsonValues["dropdownValues"]
         else:
             dropdownValues = {}
-            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
         if "hideFromSelector" in jsonValues:
             valuesToHide = jsonValues["hideFromSelector"]
         else:
             valuesToHide = []
-            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
+        if "CSPConverterValues" in jsonValues:
+            cspConverterValues = jsonValues["CSPConverterValues"]
+        else:
+            cspConverterValues = []
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     except:
         pointValues = {}
         dropdownValues = {}
-        tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+        valuesToHide = []
+        cspConverterValues = []
+        tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     mergeWindow.mainloop()
 
 def selectTeam():

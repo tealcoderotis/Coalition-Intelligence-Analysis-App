@@ -12,5 +12,51 @@
         "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
         "climb": ["No climb", "Parked", "Climbed", "Harmony"]
     },
-    "hideFromSelector": ["auto_ampNotesFail", "auto_speakerNotesFail", "ampNotesFail", "speakerNotesFail", "trapNotesFail"]
+    "hideFromSelector": ["auto_ampNotesFail", "auto_speakerNotesFail", "ampNotesFail", "speakerNotesFail", "trapNotesFail"],
+    "CSPConverterValues": {
+        "id": "",
+        "flUploaded": "",
+        "txEvent": "",
+        "numMatch": "roundNum",
+        "idAlliance": "",
+        "idDriveStation": "",
+        "idTeam": "teamNum",
+        "txScoutName": "",
+        "idStartPosition": "",
+        "flRed": "",
+        "flYellow": "",
+        "flCrash": "",
+        "flAutoStop": "",
+        "autoFlStart": "",
+        "autoFlBaseLine": "auto_leave",
+        "autoNumCellLoad": "",
+        "autoFlFoul": "",
+        "autoFlRobotContact": "",
+        "autoFlLoseStartObject": "",
+        "autoFlFail": "",
+        "autoNumAmpAttempt": ["auto_ampNotes", "auto_ampNotesFail"],
+        "autoNumAmpSuccess": "auto_ampNotes",
+        "autoNumSpeakerAttempt": ["auto_speakerNotes", "auto_speakerNotesFail"],
+        "autoNumSpeakerSuccess": "auto_speakerNotes",
+        "autoNumTrapAttempt": "",
+        "autoNumTrapSuccess": "",
+        "teleNumAmpAttempt": ["ampNotes", "ampNotesFail"],
+        "teleNumAmpSuccess": "ampNotes",
+        "teleNumSpeakerAttempt": ["speakerNotes", "speakerNotesFail"],
+        "teleNumSpeakerSuccess": "speakerNotes",
+        "teleFlPark": {
+            "value": "climb",
+            "dropdownValues": [false, true, false, false]
+        },
+        "teleIdStageOutcome": {
+            "value": "climb",
+            "dropdownValues": [0, 0, 3, 3]
+        },
+        "teleIdStageClimbSpeed": "",
+        "teleFlStageAssist": "",
+        "teleFlSpotlight": {
+            "value": "climb",
+            "dropdownValues": ["", "", "", true]
+        }
+    }
 }
