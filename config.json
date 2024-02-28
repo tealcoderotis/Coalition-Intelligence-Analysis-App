@@ -11,5 +11,6 @@
     "dropdownValues": {
         "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
         "climb": ["No climb", "Parked", "Climbed", "Harmony"]
-    }
+    },
+    "hideFromSelector": ["auto_ampNotesFail", "auto_speakerNotesFail", "ampNotesFail", "speakerNotesFail", "trapNotesFail"]
 }

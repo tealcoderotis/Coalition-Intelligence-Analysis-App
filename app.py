@@ -373,6 +373,8 @@ def initalizeDataWindow():
     dataFrameColumns.remove("roundNum")
     dataFrameColumns.remove("teamNum")
     dataFrameColumns.remove("noShow")
+    for valueToHide in valuesToHide:
+        dataFrameColumns.remove(valueToHide)
     variableDropdownVariable = tkinter.StringVar(value=dataFrameColumns[0])
     variableDropdownVariable.trace_add("write", selectValue)
     variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
@@ -429,6 +431,7 @@ def initalizeMergeWindow():
     global csvFileListbox
     global pointValues
     global dropdownValues
+    global valuesToHide
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.iconbitmap(default=getIcon())
@@ -461,6 +464,11 @@ def initalizeMergeWindow():
             dropdownValues = jsonValues["dropdownValues"]
         else:
             dropdownValues = {}
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
+        if "hideFromSelector" in jsonValues:
+            valuesToHide = jsonValues["hideFromSelector"]
+        else:
+            valuesToHide = []
             tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring and dropdown recognition may not work properly.")
     except:
         pointValues = {}
