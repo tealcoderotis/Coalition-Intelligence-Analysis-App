@@ -87,7 +87,7 @@ def mergeCsvFiles():
                     dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
             initalizeDataWindow()
         except:
-            tkinter.messagebox.showerror("Error", "Failed to load one or more CSV files")
+            tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
 
@@ -260,9 +260,10 @@ def showAllTeams():
     selectValue()
     
 def addColumns(dataFrame, columnsToAdd):
-    series = pandas.Series()
-    for column in columnsToAdd:
-        series.add(dataFrame[column])
+    dataFrame = dataFrame.copy(deep=True)
+    series = dataFrame[columnsToAdd[0]]
+    for i in range(1, len(columnsToAdd)):
+        series = series.add(dataFrame[columnsToAdd[i]])
     return series
 
 def convertToCSPFormat():
@@ -285,7 +286,7 @@ def convertToCSPFormat():
                 elif type(conversionValue) == dict:
                     dataFrame[newValue] = oldDataFrame[conversionValue["value"]].apply(replaceDataFrameWithDropdownValue, args=(conversionValue["dropdownValues"],))
         except:
-            tkinter.messagebox.showerror("Error", "Failed to load one or more CSV files")
+            tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
         else:
             fileName = tkinter.filedialog.asksaveasfilename(parent=mergeWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
             if len(fileName) > 0:

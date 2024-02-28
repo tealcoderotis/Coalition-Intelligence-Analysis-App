@@ -44,6 +44,8 @@
         "teleNumAmpSuccess": "ampNotes",
         "teleNumSpeakerAttempt": ["speakerNotes", "speakerNotesFail"],
         "teleNumSpeakerSuccess": "speakerNotes",
+        "teleNumTrapAttempt": ["trapNotesFail", "trapNotes"],
+        "teleNumTrapSuccess": "trapNotes",
         "teleFlPark": {
             "value": "climb",
             "dropdownValues": [false, true, false, false]
