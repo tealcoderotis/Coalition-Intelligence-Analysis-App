@@ -1,5 +1,4 @@
 import pandas
-from math import isnan
 from matplotlib import pyplot
 import tkinter
 import tkinter.filedialog
@@ -121,55 +120,81 @@ def selectValue(*args):
     else:
         dataFrameToDisplay = dataFrameToUse
         pointDataFrameToDisplay = pointDataFrameToUse
-    columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
-    if columnToDisplay.shape[0] > 0:
-        mode = ", ".join(map(str, columnToDisplay.mode().to_list()))
-        if columnToDisplay.dtypes == "int64":
-            statisticsLabel.configure(text=f"Mean: {columnToDisplay.mean()}    Median: {columnToDisplay.median()}    Mode: {mode}    Standard deviation: {columnToDisplay.std(ddof=0)}")
-            statisticsLabel.grid()
-            plotButtonContainer.grid()
-        else:
-            statisticsLabel.configure(text=f"Mode: {mode}")
-            statisticsLabel.grid()
-            plotButtonContainer.grid_remove()
-    else:
-        statisticsLabel.grid_remove()
-        plotButtonContainer.grid_remove()
-    rawValueDataText.configure(state=tkinter.NORMAL)
-    rawValueDataText.delete("1.0", tkinter.END)
-    if showNoShowTeamsCheckboxVariable.get() == 0:
-        rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
-    else:
-        rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
-    rawValueDataText.configure(state=tkinter.DISABLED)
-    if variableDropdownVariable.get() in pointDataFrame.columns:
-        pointColumnToDisplay = pointDataFrameToDisplay[variableDropdownVariable.get()]
-        if pointColumnToDisplay.shape[0] > 0:
-            pointMode = ", ".join(map(str, pointColumnToDisplay.mode().to_list()))
-            if pointColumnToDisplay.dtypes == "int64":
-                pointStatisticsLabel.configure(text=f"Mean: {pointColumnToDisplay.mean()}    Median: {pointColumnToDisplay.median()}    Mode: {pointMode}    Standard deviation: {pointColumnToDisplay.std(ddof=0)}")
-                pointStatisticsLabel.grid()
-                pointPlotButtonContainer.grid()
+    if variableDropdownVariable.get() != "All values":
+        columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
+        if columnToDisplay.shape[0] > 0:
+            mode = ", ".join(map(str, columnToDisplay.mode().to_list()))
+            if columnToDisplay.dtypes == "int64":
+                statisticsLabel.configure(text=f"Mean: {columnToDisplay.mean()}    Median: {columnToDisplay.median()}    Mode: {mode}    Standard deviation: {columnToDisplay.std(ddof=0)}")
+                statisticsLabel.grid()
+                plotButtonContainer.grid()
             else:
-                pointStatisticsLabel.configure(text=f"Mode: {pointMode}")
-                pointStatisticsLabel.grid()
+                statisticsLabel.configure(text=f"Mode: {mode}")
+                statisticsLabel.grid()
+                plotButtonContainer.grid_remove()
+        else:
+            statisticsLabel.grid_remove()
+            plotButtonContainer.grid_remove()
+        rawValueDataText.configure(state=tkinter.NORMAL)
+        rawValueDataText.delete("1.0", tkinter.END)
+        if showNoShowTeamsCheckboxVariable.get() == 0:
+            rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+        else:
+            rawValueDataText.insert(tkinter.END, dataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
+        rawValueDataText.configure(state=tkinter.DISABLED)
+        if variableDropdownVariable.get() in pointDataFrame.columns:
+            pointColumnToDisplay = pointDataFrameToDisplay[variableDropdownVariable.get()]
+            if pointColumnToDisplay.shape[0] > 0:
+                pointMode = ", ".join(map(str, pointColumnToDisplay.mode().to_list()))
+                if pointColumnToDisplay.dtypes == "int64":
+                    pointStatisticsLabel.configure(text=f"Mean: {pointColumnToDisplay.mean()}    Median: {pointColumnToDisplay.median()}    Mode: {pointMode}    Standard deviation: {pointColumnToDisplay.std(ddof=0)}")
+                    pointStatisticsLabel.grid()
+                    pointPlotButtonContainer.grid()
+                else:
+                    pointStatisticsLabel.configure(text=f"Mode: {pointMode}")
+                    pointStatisticsLabel.grid()
+                    pointPlotButtonContainer.grid_remove()
+            else:
+                pointStatisticsLabel.grid_remove()
                 pointPlotButtonContainer.grid_remove()
+            pointRawValueDataText.configure(state=tkinter.NORMAL)
+            pointRawValueDataText.delete("1.0", tkinter.END)
+            if showNoShowTeamsCheckboxVariable.get() == 0:
+                pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
+            else:
+                pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
+            pointRawValueDataText.configure(state=tkinter.DISABLED)
         else:
             pointStatisticsLabel.grid_remove()
             pointPlotButtonContainer.grid_remove()
-        pointRawValueDataText.configure(state=tkinter.NORMAL)
-        pointRawValueDataText.delete("1.0", tkinter.END)
-        if showNoShowTeamsCheckboxVariable.get() == 0:
-            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", variableDropdownVariable.get()]].to_string(index=False))
-        else:
-            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
-        pointRawValueDataText.configure(state=tkinter.DISABLED)
+            pointRawValueDataText.configure(state=tkinter.NORMAL)
+            pointRawValueDataText.delete("1.0", tkinter.END)
+            pointRawValueDataText.insert(tkinter.END, "This item has no scoring attached to it")
+            pointRawValueDataText.configure(state=tkinter.DISABLED)
     else:
+        statisticsLabel.grid_remove()
+        plotButtonContainer.grid_remove()
         pointStatisticsLabel.grid_remove()
         pointPlotButtonContainer.grid_remove()
+        rawValueDataText.configure(state=tkinter.NORMAL)
+        rawValueDataText.delete("1.0", tkinter.END)
+        columnsToDisplay =  list(dataFrameToDisplay.columns)
+        for valueToHide in valuesToHide:
+                columnsToDisplay.remove(valueToHide)
+        if showNoShowTeamsCheckboxVariable.get() == 0:
+            columnsToDisplay.remove("noShow")
+            rawValueDataText.insert(tkinter.END, dataFrameToDisplay[columnsToDisplay].to_string(index=False))
+        else:
+            rawValueDataText.insert(tkinter.END, dataFrameToDisplay[columnsToDisplay].to_string(index=False))
+        rawValueDataText.configure(state=tkinter.DISABLED)
         pointRawValueDataText.configure(state=tkinter.NORMAL)
         pointRawValueDataText.delete("1.0", tkinter.END)
-        pointRawValueDataText.insert(tkinter.END, "This item has no scoring attached to it")
+        pointColumnsToDisplay = list(pointDataFrameToDisplay.columns)
+        if showNoShowTeamsCheckboxVariable.get() == 0:
+            pointColumnsToDisplay.remove("noShow")
+            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[pointColumnsToDisplay].to_string(index=False))
+        else:
+            pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[pointColumnsToDisplay].to_string(index=False))
         pointRawValueDataText.configure(state=tkinter.DISABLED)
 
 def showBoxPlot(usePointValues=False):
@@ -334,6 +359,7 @@ def initalizeDataWindow():
     dataFrameColumns.remove("noShow")
     for valueToHide in valuesToHide:
         dataFrameColumns.remove(valueToHide)
+    dataFrameColumns.insert(0, "All values")
     variableDropdownVariable = tkinter.StringVar(value=dataFrameColumns[0])
     variableDropdownVariable.trace_add("write", selectValue)
     variableDropdown = tkinter.OptionMenu(upperFrame, variableDropdownVariable, *dataFrameColumns)
