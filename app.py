@@ -85,9 +85,10 @@ def mergeCsvFiles():
             for column in dataFrame.columns:
                 if column in dropdownValues:
                     dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
-            initalizeDataWindow()
         except:
             tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
+        else:
+            initalizeDataWindow()
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
 
@@ -105,8 +106,8 @@ def selectValue(*args):
     global variableDropdown
     global variableDropdownVariable
     global noShowCountLabel
-    global standardDeviationLabel
-    global pointStandardDeviationLabel
+    global statisticsLabel
+    global pointStatisticsLabel
     global showNoShowTeamsCheckboxVariable
     dataFrameToUse = filterDataFrame(False, False)
     pointDataFrameToUse = filterDataFrame(False, True)
@@ -121,18 +122,18 @@ def selectValue(*args):
         dataFrameToDisplay = dataFrameToUse
         pointDataFrameToDisplay = pointDataFrameToUse
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
-    if columnToDisplay.dtypes == "int64":
-        if isnan(columnToDisplay.std()):
-            standardDeviationLabel.grid_remove()
-        else:
-            standardDeviationLabel.configure(text=f"Standard deviation: {columnToDisplay.std()}")
-            standardDeviationLabel.grid()
-        if columnToDisplay.shape[0] > 0:
+    if columnToDisplay.shape[0] > 0:
+        mode = ", ".join(map(str, columnToDisplay.mode().to_list()))
+        if columnToDisplay.dtypes == "int64":
+            statisticsLabel.configure(text=f"Mean: {columnToDisplay.mean()}    Median: {columnToDisplay.median()}    Mode: {mode}    Standard deviation: {columnToDisplay.std(ddof=0)}")
+            statisticsLabel.grid()
             plotButtonContainer.grid()
         else:
+            statisticsLabel.configure(text=f"Mode: {mode}")
+            statisticsLabel.grid()
             plotButtonContainer.grid_remove()
     else:
-        standardDeviationLabel.grid_remove()
+        statisticsLabel.grid_remove()
         plotButtonContainer.grid_remove()
     rawValueDataText.configure(state=tkinter.NORMAL)
     rawValueDataText.delete("1.0", tkinter.END)
@@ -143,18 +144,18 @@ def selectValue(*args):
     rawValueDataText.configure(state=tkinter.DISABLED)
     if variableDropdownVariable.get() in pointDataFrame.columns:
         pointColumnToDisplay = pointDataFrameToDisplay[variableDropdownVariable.get()]
-        if pointColumnToDisplay.dtypes == "int64":
-            if isnan(pointColumnToDisplay.std()):
-                pointStandardDeviationLabel.grid_remove()
-            else:
-                pointStandardDeviationLabel.configure(text=f"Standard deviation: {pointColumnToDisplay.std()}")
-                pointStandardDeviationLabel.grid()
-            if pointColumnToDisplay.shape[0] > 0:
+        if pointColumnToDisplay.shape[0] > 0:
+            pointMode = ", ".join(map(str, pointColumnToDisplay.mode().to_list()))
+            if pointColumnToDisplay.dtypes == "int64":
+                pointStatisticsLabel.configure(text=f"Mean: {pointColumnToDisplay.mean()}    Median: {pointColumnToDisplay.median()}    Mode: {pointMode}    Standard deviation: {pointColumnToDisplay.std(ddof=0)}")
+                pointStatisticsLabel.grid()
                 pointPlotButtonContainer.grid()
             else:
+                pointStatisticsLabel.configure(text=f"Mode: {pointMode}")
+                pointStatisticsLabel.grid()
                 pointPlotButtonContainer.grid_remove()
         else:
-            pointStandardDeviationLabel.grid_remove()
+            pointStatisticsLabel.grid_remove()
             pointPlotButtonContainer.grid_remove()
         pointRawValueDataText.configure(state=tkinter.NORMAL)
         pointRawValueDataText.delete("1.0", tkinter.END)
@@ -164,7 +165,7 @@ def selectValue(*args):
             pointRawValueDataText.insert(tkinter.END, pointDataFrameToDisplay[["roundNum", "teamNum", "noShow", variableDropdownVariable.get()]].to_string(index=False))
         pointRawValueDataText.configure(state=tkinter.DISABLED)
     else:
-        pointStandardDeviationLabel.grid_remove()
+        pointStatisticsLabel.grid_remove()
         pointPlotButtonContainer.grid_remove()
         pointRawValueDataText.configure(state=tkinter.NORMAL)
         pointRawValueDataText.delete("1.0", tkinter.END)
@@ -309,8 +310,8 @@ def initalizeDataWindow():
     global variableDropdownVariable
     global showNoShowTeamsCheckboxVariable
     global noShowCountLabel
-    global standardDeviationLabel
-    global pointStandardDeviationLabel
+    global statisticsLabel
+    global pointStatisticsLabel
     global plotButtonContainer
     global pointPlotButtonContainer
     global teamsToFilter
@@ -356,8 +357,8 @@ def initalizeDataWindow():
     valueContainer.columnconfigure(0, weight=1)
     rawValueDataText = tkinter.Text(valueContainer, wrap=tkinter.NONE)
     rawValueDataText.grid(row=0, column=0, sticky="NESW")
-    standardDeviationLabel = tkinter.Label(valueContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
-    standardDeviationLabel.grid(row=1, column=0, sticky="NEW")
+    statisticsLabel = tkinter.Label(valueContainer)
+    statisticsLabel.grid(row=1, column=0)
     plotButtonContainer = tkinter.Frame(valueContainer)
     boxplotDisplayButton = tkinter.Button(plotButtonContainer, text="Show box plot", command=showBoxPlot)
     boxplotDisplayButton.grid(row=0, column=0)
@@ -370,8 +371,8 @@ def initalizeDataWindow():
     pointContainer.columnconfigure(0, weight=1)
     pointRawValueDataText = tkinter.Text(pointContainer, wrap=tkinter.NONE)
     pointRawValueDataText.grid(row=0, column=0, sticky="NESW")
-    pointStandardDeviationLabel = tkinter.Label(pointContainer, anchor=tkinter.NW, justify=tkinter.LEFT)
-    pointStandardDeviationLabel.grid(row=1, column=0, sticky="NEW")
+    pointStatisticsLabel = tkinter.Label(pointContainer)
+    pointStatisticsLabel.grid(row=1, column=0)
     pointPlotButtonContainer = tkinter.Frame(pointContainer)
     pointBoxplotDisplayButton = tkinter.Button(pointPlotButtonContainer, text="Show box plot", command=showPointBoxPlot)
     pointBoxplotDisplayButton.grid(row=0, column=0)
