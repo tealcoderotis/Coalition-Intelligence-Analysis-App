@@ -298,7 +298,7 @@ def convertToCSPFormat():
             oldDataFrame = pandas.read_csv(filesToMerge[0])
             for i in range(1, len(filesToMerge)):
                 data = pandas.read_csv(filesToMerge[i])
-                oldDataFrame = pandas.concat([dataFrame, data], ignore_index=True)
+                oldDataFrame = pandas.concat([oldDataFrame, data], ignore_index=True)
             oldDataFrame.sort_values("roundNum", inplace=True)
             dataFrame = pandas.DataFrame()
             for newValue, conversionValue in cspConverterValues.items():

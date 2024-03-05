@@ -1,0 +1,1 @@
+python -m PyInstaller app.py -F -n "Coalition Intelligence Analysis App" --add-data "icon.ico:." --splash "splash.png" -w -i "icon.ico"
