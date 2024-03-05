@@ -60,5 +60,9 @@
             "value": "climb",
             "dropdownValues": ["", "", "", true]
         }
+    },
+    "cycleCounts": {
+        "cycleCount": ["ampNotes", "speakerNotes"],
+        "auto_cycleCount": ["auto_ampNotes", "auto_speakerNotes"]
     }
 }

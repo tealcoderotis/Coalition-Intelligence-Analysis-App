@@ -84,6 +84,9 @@ def mergeCsvFiles():
             for column in dataFrame.columns:
                 if column in dropdownValues:
                     dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
+            for cycleCountValue, itemsToCount in cycleCountValues.items():
+                indexToAdd = dataFrame.columns.get_loc(itemsToCount[len(itemsToCount) - 1]) + 1
+                dataFrame.insert(loc=indexToAdd, column=cycleCountValue, value=addColumns(dataFrame, itemsToCount))
         except:
             tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
         else:
@@ -418,6 +421,7 @@ def initalizeMergeWindow():
     global dropdownValues
     global valuesToHide
     global cspConverterValues
+    global cycleCountValues
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.iconbitmap(default=getIcon())
@@ -461,11 +465,17 @@ def initalizeMergeWindow():
         else:
             cspConverterValues = []
             tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
+        if "cycleCounts" in jsonValues:
+            cycleCountValues = jsonValues["cycleCounts"]
+        else:
+            cycleCountValues = {}
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     except:
         pointValues = {}
         dropdownValues = {}
         valuesToHide = []
         cspConverterValues = []
+        cycleCountValues = []
         tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     mergeWindow.mainloop()
 
