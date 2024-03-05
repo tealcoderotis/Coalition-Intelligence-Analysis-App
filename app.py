@@ -75,18 +75,20 @@ def mergeCsvFiles():
                 data = pandas.read_csv(filesToMerge[i])
                 dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
             dataFrame.sort_values("roundNum", inplace=True)
+            if "preprocessed" not in dataFrame.columns:
+                dataFrame["preprocessed"] = True
+                for column in dataFrame.columns:
+                    if column in dropdownValues:
+                        dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
+                for cycleCountValue, itemsToCount in cycleCountValues.items():
+                    indexToAdd = dataFrame.columns.get_loc(itemsToCount[len(itemsToCount) - 1]) + 1
+                    dataFrame.insert(loc=indexToAdd, column=cycleCountValue, value=addColumns(dataFrame, itemsToCount))
             pointDataFrame = dataFrame.copy(deep=True)
             for column in pointDataFrame.columns:
                 if column in pointValues:
                     pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
                 elif column != "teamNum" and column != "roundNum" and column != "noShow":
                     pointDataFrame.drop(columns=column, inplace=True)
-            for column in dataFrame.columns:
-                if column in dropdownValues:
-                    dataFrame[column] = dataFrame[column].apply(replaceDataFrameWithDropdownValue, args=(dropdownValues[column],))
-            for cycleCountValue, itemsToCount in cycleCountValues.items():
-                indexToAdd = dataFrame.columns.get_loc(itemsToCount[len(itemsToCount) - 1]) + 1
-                dataFrame.insert(loc=indexToAdd, column=cycleCountValue, value=addColumns(dataFrame, itemsToCount))
         except:
             tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
         else:
@@ -181,7 +183,7 @@ def selectValue(*args):
         pointPlotButtonContainer.grid_remove()
         rawValueDataText.configure(state=tkinter.NORMAL)
         rawValueDataText.delete("1.0", tkinter.END)
-        columnsToDisplay =  list(dataFrameToDisplay.columns)
+        columnsToDisplay = list(dataFrameToDisplay.columns)
         for valueToHide in valuesToHide:
                 columnsToDisplay.remove(valueToHide)
         if showNoShowTeamsCheckboxVariable.get() == 0:
@@ -361,7 +363,8 @@ def initalizeDataWindow():
     dataFrameColumns.remove("teamNum")
     dataFrameColumns.remove("noShow")
     for valueToHide in valuesToHide:
-        dataFrameColumns.remove(valueToHide)
+        if valueToHide in dataFrameColumns:
+            dataFrameColumns.remove(valueToHide)
     dataFrameColumns.insert(0, "All values")
     variableDropdownVariable = tkinter.StringVar(value=dataFrameColumns[0])
     variableDropdownVariable.trace_add("write", selectValue)
@@ -475,8 +478,9 @@ def initalizeMergeWindow():
         dropdownValues = {}
         valuesToHide = []
         cspConverterValues = []
-        cycleCountValues = []
+        cycleCountValues = {}
         tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
+    valuesToHide.append("preprocessed")
     mergeWindow.mainloop()
 
 def selectTeam():
