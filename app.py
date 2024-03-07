@@ -207,18 +207,18 @@ def showBoxPlot(usePointValues=False):
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
     teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
-        axies = pyplot.subplots(nrows=1, ncols=1)[1]
+        axies = pyplot.subplots(nrows=1, ncols=1, sharey=True)[1]
         columnToDisplay.plot.box(ax=axies)
-        axies.set_title("Team" + str(teams[0]))
+        axies.set_title(teams[0])
     else:
-        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1)[1]
+        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1, sharey=True)[1]
         columnToDisplay.plot.box(ax=axies[0])
         axies[0].set_title("All Teams")
         for i in range(len(teams)):
             teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
             columnToDisplay = teamDataFrame[variableDropdownVariable.get()]
             columnToDisplay.plot.box(ax=axies[i+1])
-            axies[i+1].set_title("Team " + str(teams[i]))
+            axies[i+1].set_title(teams[i])
     pyplot.get_current_fig_manager().set_window_title("Box Plot")
     pyplot.show()
 
@@ -230,18 +230,18 @@ def showLinePlot(usePointValues=False):
     columnsToDisplay = dataFrameToDisplay[["roundNum", variableDropdownVariable.get()]]
     teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
-        axies = pyplot.subplots(nrows=1, ncols=1)[1]
+        axies = pyplot.subplots(nrows=1, ncols=1, sharey=True, sharex=True)[1]
         columnsToDisplay.plot.line(ax=axies, x="roundNum", y=variableDropdownVariable.get())
-        axies.set_title("Team" + str(teams[0]))
+        axies.set_title(teams[0])
     else:
-        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1)[1]
+        axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1, sharey=True, sharex=True)[1]
         columnsToDisplay.plot.line(ax=axies[0], x="roundNum", y=variableDropdownVariable.get())
         axies[0].set_title("All Teams")
         for i in range(len(teams)):
             teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
             columnsToDisplay = teamDataFrame[["roundNum", variableDropdownVariable.get()]]
             columnsToDisplay.plot.line(ax=axies[i+1], x="roundNum", y=variableDropdownVariable.get())
-            axies[i+1].set_title("Team " + str(teams[i]))
+            axies[i+1].set_title(teams[i])
     pyplot.get_current_fig_manager().set_window_title("Line Graph")
     pyplot.show()
 
