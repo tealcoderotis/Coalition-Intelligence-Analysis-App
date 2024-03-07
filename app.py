@@ -339,6 +339,7 @@ def initalizeDataWindow():
     global variableDropdown
     global variableDropdownVariable
     global showNoShowTeamsCheckboxVariable
+    global showRobotStoppedTeamsCheckboxVariable
     global noShowCountLabel
     global statisticsLabel
     global pointStatisticsLabel
@@ -374,12 +375,16 @@ def initalizeDataWindow():
     showNoShowTeamsCheckboxVariable.trace_add("write", selectValue)
     showNoShowTeamsCheckbox = tkinter.Checkbutton(upperFrame, text="Show rounds without robot", indicatoron=False, variable=showNoShowTeamsCheckboxVariable)
     showNoShowTeamsCheckbox.grid(row=0, column=1)
+    showRobotStoppedTeamsCheckboxVariable = tkinter.IntVar(value=0)
+    showRobotStoppedTeamsCheckboxVariable.trace_add("write", selectValue)
+    showRobotStoppedTeamsCheckbox = tkinter.Checkbutton(upperFrame, text="Show rounds with stopped robot", indicatoron=False, variable=showRobotStoppedTeamsCheckboxVariable)
+    showRobotStoppedTeamsCheckbox.grid(row=0, column=2)
     selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
-    selectTeamButton.grid(row=0, column=2)
+    selectTeamButton.grid(row=0, column=3)
     exportButton = tkinter.Button(upperFrame, text="Export values as CSV", command=exportCsv)
-    exportButton.grid(row=0, column=3)
+    exportButton.grid(row=0, column=4)
     pointExportButton = tkinter.Button(upperFrame, text="Export scores as CSV", command=exportPointCsv)
-    pointExportButton.grid(row=0, column=4)
+    pointExportButton.grid(row=0, column=5)
     upperFrame.grid(row=0, column=0, sticky="NEW")
     noShowCountLabel = tkinter.Label(dataWindow)
     noShowCountLabel.grid(row=1, column=0)
