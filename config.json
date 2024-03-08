@@ -6,7 +6,12 @@
         "speakerNotes": 2,
         "auto_speakerNotes": 5,
         "trapNotes": 5,
-        "climb": [0, 1, 3, 5]
+        "climb": {
+            "No climb": 0,
+            "Parked": 1,
+            "Climbed": 3,
+            "Harmony": 5
+        }
     },
     "dropdownValues": {
         "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
@@ -58,7 +63,7 @@
         "teleFlStageAssist": "",
         "teleFlSpotlight": {
             "value": "climb",
-            "dropdownValues": ["", "", "", true]
+            "dropdownValues": ["", "", "", ""]
         }
     },
     "cycleCounts": {

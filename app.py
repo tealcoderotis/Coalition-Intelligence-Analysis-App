@@ -19,11 +19,10 @@ def replaceDataFrameWithPointValue(data, pointValue, dataType):
             return pointValue
         else:
             return 0
-    if dataType == "int64":
-        if type(pointValue) == list:
-            return pointValue[data]
-        else:
-            return data * pointValue
+    if dataType == "int64" or dataType == "float64":
+        return data * pointValue
+    if dataType == "object":
+        return pointValue[data]
     
 def replaceDataFrameWithDropdownValue(data, dropdownList):
     return dropdownList[data]
@@ -83,12 +82,13 @@ def mergeCsvFiles():
                 for cycleCountValue, itemsToCount in cycleCountValues.items():
                     indexToAdd = dataFrame.columns.get_loc(itemsToCount[len(itemsToCount) - 1]) + 1
                     dataFrame.insert(loc=indexToAdd, column=cycleCountValue, value=addColumns(dataFrame, itemsToCount))
-            pointDataFrame = dataFrame.copy(deep=True)
-            for column in pointDataFrame.columns:
-                if column in pointValues:
-                    pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
-                elif column != "teamNum" and column != "roundNum" and column != "noShow" and column != "robotStop":
-                    pointDataFrame.drop(columns=column, inplace=True)
+            pointDataFrame = pandas.DataFrame()
+            pointDataFrame["roundNum"] = dataFrame["roundNum"]
+            pointDataFrame["teamNum"] = dataFrame["teamNum"]
+            pointDataFrame["noShow"] = dataFrame["noShow"]
+            pointDataFrame["robotStop"] = dataFrame["robotStop"]
+            for column, value in pointValues.items():
+                    pointDataFrame[column] = dataFrame[column].apply(replaceDataFrameWithPointValue, args=(value, dataFrame[column].dtypes,))
         except:
             tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
         else:
@@ -126,7 +126,7 @@ def selectValue(*args):
         columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
         if columnToDisplay.shape[0] > 0:
             mode = ", ".join(map(str, columnToDisplay.mode().to_list()))
-            if columnToDisplay.dtypes == "int64":
+            if columnToDisplay.dtypes == "int64" or columnToDisplay.dtypes == "float64":
                 statisticsLabel.configure(text=f"Mean: {columnToDisplay.mean()}    Median: {columnToDisplay.median()}    Mode: {mode}    Standard deviation: {columnToDisplay.std(ddof=0)}")
                 statisticsLabel.grid()
                 plotButtonContainer.grid()
@@ -148,7 +148,7 @@ def selectValue(*args):
             pointColumnToDisplay = pointDataFrameToDisplay[variableDropdownVariable.get()]
             if pointColumnToDisplay.shape[0] > 0:
                 pointMode = ", ".join(map(str, pointColumnToDisplay.mode().to_list()))
-                if pointColumnToDisplay.dtypes == "int64":
+                if pointColumnToDisplay.dtypes == "int64" or pointColumnToDisplay.dtypes == "float64":
                     pointStatisticsLabel.configure(text=f"Mean: {pointColumnToDisplay.mean()}    Median: {pointColumnToDisplay.median()}    Mode: {pointMode}    Standard deviation: {pointColumnToDisplay.std(ddof=0)}")
                     pointStatisticsLabel.grid()
                     pointPlotButtonContainer.grid()
