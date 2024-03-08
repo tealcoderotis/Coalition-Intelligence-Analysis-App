@@ -1,10 +1,10 @@
 {
     "pointValues": {
         "auto_leave": 2,
-        "ampNotes": 1,
-        "auto_ampNotes": 2,
-        "speakerNotes": 2,
-        "auto_speakerNotes": 5,
+        "auto_ampNotes": 1,
+        "auto_speakerNotes": 2,
+        "ampNotes": 2,
+        "speakerNotes": 5,
         "trapNotes": 5,
         "climb": {
             "No climb": 0,
