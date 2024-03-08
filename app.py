@@ -44,10 +44,10 @@ def filterDataFrame(hideNoShow, usePointDataFrame):
         else:
             dataFrameToUse = dataFrame
     if hideNoShow == True and showNoShowTeamsCheckboxVariable.get() == 0:
-        dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
-        return dataFrameToDisplay
-    else:
-        return dataFrameToUse
+        dataFrameToUse = dataFrameToUse[dataFrameToUse["noShow"].values == False]
+    if hideNoShow == True and showRobotStoppedTeamsCheckboxVariable.get() == 0:
+        dataFrameToUse = dataFrameToUse[dataFrameToUse["robotStop"].values == "No stop"]
+    return dataFrameToUse
 
 def addCsvFile():
     global filesToMerge
@@ -87,7 +87,7 @@ def mergeCsvFiles():
             for column in pointDataFrame.columns:
                 if column in pointValues:
                     pointDataFrame[column] = pointDataFrame[column].apply(replaceDataFrameWithPointValue, args=(pointValues[column], pointDataFrame[column].dtypes,))
-                elif column != "teamNum" and column != "roundNum" and column != "noShow":
+                elif column != "teamNum" and column != "roundNum" and column != "noShow" and column != "robotStop":
                     pointDataFrame.drop(columns=column, inplace=True)
         except:
             tkinter.messagebox.showerror("Error", "An error occured while trying to load the data")
@@ -109,22 +109,19 @@ def selectValue(*args):
     global pointRawValueDataText
     global variableDropdown
     global variableDropdownVariable
-    global noShowCountLabel
+    global countLabel
     global statisticsLabel
     global pointStatisticsLabel
     global showNoShowTeamsCheckboxVariable
     dataFrameToUse = filterDataFrame(False, False)
-    pointDataFrameToUse = filterDataFrame(False, True)
     noShowCount = dataFrameToUse[dataFrameToUse["noShow"] == True].shape[0]
     showCount = dataFrameToUse[dataFrameToUse["noShow"] == False].shape[0]
-    totalShowCount = noShowCount + showCount
-    noShowCountLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {totalShowCount} rounds in total")
-    if showNoShowTeamsCheckboxVariable.get() == 0:
-        dataFrameToDisplay = dataFrameToUse[dataFrameToUse["noShow"].values == False]
-        pointDataFrameToDisplay = pointDataFrameToUse[pointDataFrameToUse["noShow"].values == False]
-    else:
-        dataFrameToDisplay = dataFrameToUse
-        pointDataFrameToDisplay = pointDataFrameToUse
+    robotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values == "No stop"].shape[0]
+    noRobotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values != "No stop"].shape[0]
+    totalCount = dataFrameToUse.shape[0]
+    countLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {robotStoppedCount} rounds with stopped robot    {noRobotStoppedCount} rounds without stopped robot    {totalCount} rounds total")
+    dataFrameToDisplay = filterDataFrame(True, False)
+    pointDataFrameToDisplay = filterDataFrame(True, True)
     if variableDropdownVariable.get() != "All values":
         columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
         if columnToDisplay.shape[0] > 0:
@@ -340,7 +337,7 @@ def initalizeDataWindow():
     global variableDropdownVariable
     global showNoShowTeamsCheckboxVariable
     global showRobotStoppedTeamsCheckboxVariable
-    global noShowCountLabel
+    global countLabel
     global statisticsLabel
     global pointStatisticsLabel
     global plotButtonContainer
@@ -386,8 +383,8 @@ def initalizeDataWindow():
     pointExportButton = tkinter.Button(upperFrame, text="Export scores as CSV", command=exportPointCsv)
     pointExportButton.grid(row=0, column=5)
     upperFrame.grid(row=0, column=0, sticky="NEW")
-    noShowCountLabel = tkinter.Label(dataWindow)
-    noShowCountLabel.grid(row=1, column=0)
+    countLabel = tkinter.Label(dataWindow)
+    countLabel.grid(row=1, column=0)
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
     valueContainer.rowconfigure(0, weight=1)
