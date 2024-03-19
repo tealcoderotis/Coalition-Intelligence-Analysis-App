@@ -69,5 +69,10 @@
     "cycleCounts": {
         "cycleCount": ["ampNotes", "speakerNotes"],
         "auto_cycleCount": ["auto_ampNotes", "auto_speakerNotes"]
+    },
+    "robotAbilites": {
+        "ampNotes": 0,
+        "speakerNotes": 0,
+        "climb": ["No climb", "Parked"]
     }
 }

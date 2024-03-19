@@ -114,13 +114,22 @@ def selectValue(*args):
     global pointStatisticsLabel
     global showNoShowTeamsCheckboxVariable
     dataFrameToUse = filterDataFrame(False, False)
-    noShowCount = dataFrameToUse[dataFrameToUse["noShow"] == True].shape[0]
-    showCount = dataFrameToUse[dataFrameToUse["noShow"] == False].shape[0]
+    noShowCount = dataFrameToUse[dataFrameToUse["noShow"].values == True].shape[0]
+    showCount = dataFrameToUse[dataFrameToUse["noShow"].values == False].shape[0]
     robotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values == "No stop"].shape[0]
     noRobotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values != "No stop"].shape[0]
     totalCount = dataFrameToUse.shape[0]
     countLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {robotStoppedCount} rounds with stopped robot    {noRobotStoppedCount} rounds without stopped robot    {totalCount} rounds total")
     dataFrameToDisplay = filterDataFrame(True, False)
+    abilityPrecentages = {}
+    for ability, value in robotAbilites.items():
+        if type(value) == int:
+            abilityValue = dataFrameToDisplay.loc[dataFrameToUse[ability].values > value].shape[0] / dataFrameToDisplay.shape[0] * 100
+            abilityPrecentages[ability] = abilityValue
+        elif type(value) == list:
+            abilityValue = dataFrameToDisplay[~dataFrameToUse[abilityValue].isin(value)].shape[0] / dataFrameToDisplay.shape[0] * 100
+            abilityPrecentages[ability] = abilityValue
+    abilityLabel.configure(text="    ".join(f"{value}% {key}" for key, value in abilityPrecentages.items()))
     pointDataFrameToDisplay = filterDataFrame(True, True)
     if variableDropdownVariable.get() != "All values":
         columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
@@ -345,6 +354,7 @@ def initalizeDataWindow():
     global teamsToFilter
     global filteredDataFrame
     global filteredPointDataFrame
+    global abilityLabel
     teamsToFilter = None
     filteredDataFrame = None
     mergeWindow.destroy()
@@ -353,7 +363,7 @@ def initalizeDataWindow():
     dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
-    dataWindow.rowconfigure(2, weight=1)
+    dataWindow.rowconfigure(3, weight=1)
     upperFrame = tkinter.Frame()
     upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
@@ -385,6 +395,8 @@ def initalizeDataWindow():
     upperFrame.grid(row=0, column=0, sticky="NEW")
     countLabel = tkinter.Label(dataWindow)
     countLabel.grid(row=1, column=0)
+    abilityLabel = tkinter.Label(dataWindow)
+    abilityLabel.grid(row=2, column=0)
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
     valueContainer.rowconfigure(0, weight=1)
@@ -414,7 +426,7 @@ def initalizeDataWindow():
     pointLineplotDisplayButton.grid(row=0, column=1)
     pointPlotButtonContainer.grid(row=2, column=0, sticky="NE")
     mainContainer.add(pointContainer, sticky="NESW")
-    mainContainer.grid(row=2, column=0, sticky="NESW")
+    mainContainer.grid(row=3, column=0, sticky="NESW")
     selectValue()
     dataWindow.mainloop()
 
@@ -427,6 +439,7 @@ def initalizeMergeWindow():
     global valuesToHide
     global cspConverterValues
     global cycleCountValues
+    global robotAbilites
     filesToMerge = []
     mergeWindow = tkinter.Tk()
     mergeWindow.iconbitmap(default=getIcon())
@@ -475,12 +488,18 @@ def initalizeMergeWindow():
         else:
             cycleCountValues = {}
             tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
+        if "robotAbilites" in jsonValues:
+            robotAbilites = jsonValues["robotAbilites"]
+        else:
+            robotAbilites = {}
+            tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     except:
         pointValues = {}
         dropdownValues = {}
         valuesToHide = []
         cspConverterValues = []
         cycleCountValues = {}
+        robotAbilites = {}
         tkinter.messagebox.showerror("Error", "Failed to load config.json. Scoring, dropdown recognition, and the CSP converter may not work properly.")
     valuesToHide.append("preprocessed")
     mergeWindow.mainloop()
