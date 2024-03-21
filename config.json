@@ -71,8 +71,12 @@
         "auto_cycleCount": ["auto_ampNotes", "auto_speakerNotes"]
     },
     "robotAbilites": {
+        "auto_ampNotes": 0,
+        "auto_speakerNotes": 0,
+        "auto_cycleCount": 0,
         "ampNotes": 0,
         "speakerNotes": 0,
+        "cycleCount": 0,
         "climb": ["No climb", "Parked"]
     }
 }

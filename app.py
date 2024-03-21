@@ -121,15 +121,6 @@ def selectValue(*args):
     totalCount = dataFrameToUse.shape[0]
     countLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {robotStoppedCount} rounds with stopped robot    {noRobotStoppedCount} rounds without stopped robot    {totalCount} rounds total")
     dataFrameToDisplay = filterDataFrame(True, False)
-    abilityPrecentages = {}
-    for ability, value in robotAbilites.items():
-        if type(value) == int:
-            abilityValue = dataFrameToDisplay.loc[dataFrameToUse[ability].values > value].shape[0] / dataFrameToDisplay.shape[0] * 100
-            abilityPrecentages[ability] = abilityValue
-        elif type(value) == list:
-            abilityValue = dataFrameToDisplay[~dataFrameToUse[abilityValue].isin(value)].shape[0] / dataFrameToDisplay.shape[0] * 100
-            abilityPrecentages[ability] = abilityValue
-    abilityLabel.configure(text="    ".join(f"{value}% {key}" for key, value in abilityPrecentages.items()))
     pointDataFrameToDisplay = filterDataFrame(True, True)
     if variableDropdownVariable.get() != "All values":
         columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
@@ -211,7 +202,7 @@ def selectValue(*args):
 def showBoxPlot(usePointValues=False):
     dataFrameToDisplay = filterDataFrame(True, usePointValues)
     columnToDisplay = dataFrameToDisplay[variableDropdownVariable.get()]
-    teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
+    teams = dataFrameToDisplay.sort_values("teamNum")["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
         axies = pyplot.subplots(nrows=1, ncols=1, sharey=True)[1]
         columnToDisplay.plot.box(ax=axies)
@@ -234,7 +225,7 @@ def showPointBoxPlot():
 def showLinePlot(usePointValues=False):
     dataFrameToDisplay = filterDataFrame(True, usePointValues)
     columnsToDisplay = dataFrameToDisplay[["roundNum", variableDropdownVariable.get()]]
-    teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
+    teams = dataFrameToDisplay.sort_values("teamNum")["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
         axies = pyplot.subplots(nrows=1, ncols=1, sharey=True, sharex=True)[1]
         columnsToDisplay.plot.line(ax=axies, x="roundNum", y=variableDropdownVariable.get())
@@ -354,7 +345,6 @@ def initalizeDataWindow():
     global teamsToFilter
     global filteredDataFrame
     global filteredPointDataFrame
-    global abilityLabel
     teamsToFilter = None
     filteredDataFrame = None
     mergeWindow.destroy()
@@ -363,7 +353,7 @@ def initalizeDataWindow():
     dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
-    dataWindow.rowconfigure(3, weight=1)
+    dataWindow.rowconfigure(2, weight=1)
     upperFrame = tkinter.Frame()
     upperFrame.columnconfigure(0, weight=1)
     dataFrameColumns = list(dataFrame.columns)
@@ -388,15 +378,15 @@ def initalizeDataWindow():
     showRobotStoppedTeamsCheckbox.grid(row=0, column=2)
     selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
     selectTeamButton.grid(row=0, column=3)
+    showTeamSummariesButton = tkinter.Button(upperFrame, text="Team summaries", command=initalizeTeamSummariesWindow)
+    showTeamSummariesButton.grid(row=0, column=4)
     exportButton = tkinter.Button(upperFrame, text="Export values as CSV", command=exportCsv)
-    exportButton.grid(row=0, column=4)
+    exportButton.grid(row=0, column=5)
     pointExportButton = tkinter.Button(upperFrame, text="Export scores as CSV", command=exportPointCsv)
-    pointExportButton.grid(row=0, column=5)
+    pointExportButton.grid(row=0, column=6)
     upperFrame.grid(row=0, column=0, sticky="NEW")
     countLabel = tkinter.Label(dataWindow)
     countLabel.grid(row=1, column=0)
-    abilityLabel = tkinter.Label(dataWindow)
-    abilityLabel.grid(row=2, column=0)
     mainContainer = tkinter.PanedWindow(dataWindow, orient=tkinter.HORIZONTAL)
     valueContainer = tkinter.Frame()
     valueContainer.rowconfigure(0, weight=1)
@@ -426,7 +416,7 @@ def initalizeDataWindow():
     pointLineplotDisplayButton.grid(row=0, column=1)
     pointPlotButtonContainer.grid(row=2, column=0, sticky="NE")
     mainContainer.add(pointContainer, sticky="NESW")
-    mainContainer.grid(row=3, column=0, sticky="NESW")
+    mainContainer.grid(row=2, column=0, sticky="NESW")
     selectValue()
     dataWindow.mainloop()
 
@@ -537,5 +527,47 @@ def selectTeam():
     showAllTeamsToFilterButton = tkinter.Button(lowerFrame, text="Show all teams", command=showAllTeams)
     showAllTeamsToFilterButton.grid(row=0, column=4)
     lowerFrame.grid(row=1, column=0, sticky="EW")
+
+def initalizeTeamSummariesWindow():
+    global robotAbilitesDropdownVariable
+    global robotAbilitesText
+    global abilityPrecentagesDataFrame
+    global abilityMeansDataFrame
+    teamAbilityWindow = tkinter.Toplevel()
+    teamAbilityWindow.title("Team Summaries")
+    teamAbilityWindow.geometry("500x300")
+    teamAbilityWindow.grab_set()
+    teamAbilityWindow.transient(dataWindow)
+    teamAbilityWindow.columnconfigure(0, weight=1)
+    teamAbilityWindow.rowconfigure(1, weight=1)
+    robotAbilitesDropdownVariable = tkinter.StringVar(value="Precentages")
+    robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityWindow, robotAbilitesDropdownVariable, "Precentages", "Means")
+    robotAbilitesDropdown.grid(row=0, column=0, sticky="NEW")
+    robotAbilitesText = tkinter.Text(teamAbilityWindow, wrap=tkinter.NONE)
+    robotAbilitesText.grid(row=1, column=0, sticky="NESW")
+    dataFrameToDisplay = filterDataFrame(True, False)
+    teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
+    abilityPrecentagesDataFrame = pandas.DataFrame()
+    abilityPrecentagesDataFrame["teamNum"] = pandas.Series(teams)
+    abilityMeansDataFrame = pandas.DataFrame()
+    abilityMeansDataFrame["teamNum"] = pandas.Series(teams)
+    for ability, value in robotAbilites.items():
+        abilityPrecentageList = []
+        abilityMeanList = []
+        for team in teams:
+            teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"] == team]
+            if type(value) == int:
+                abilityPrecentage = teamDataFrame[teamDataFrame[ability].values > value].shape[0] / teamDataFrame.shape[0] * 100
+                abilityMean = teamDataFrame[ability].mean()
+                abilityMeanList.append(abilityMean)
+            elif type(value) == list:
+                abilityPrecentage = teamDataFrame[~teamDataFrame[ability].isin(value)].shape[0] / teamDataFrame.shape[0] * 100
+            abilityPrecentageList.append(abilityPrecentage)
+        abilityPrecentagesDataFrame[ability] = pandas.Series(abilityPrecentageList, dtype="object")
+        abilityMeansDataFrame[ability] = pandas.Series(abilityMeanList, dtype="object")
+    abilityPrecentagesDataFrame.sort_values("teamNum", inplace=True)
+    abilityMeansDataFrame.sort_values("teamNum", inplace=True)
+    robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
+    robotAbilitesText.configure(state=tkinter.DISABLED)
 
 initalizeMergeWindow()
