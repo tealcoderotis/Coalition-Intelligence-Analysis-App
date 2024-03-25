@@ -528,6 +528,14 @@ def selectTeam():
     showAllTeamsToFilterButton.grid(row=0, column=4)
     lowerFrame.grid(row=1, column=0, sticky="EW")
 
+def exportTeamAbilites():
+    fileName = tkinter.filedialog.asksaveasfilename(parent=dataWindow, filetypes=[("CSV File", "*.csv")], initialfile="data.csv")
+    if len(fileName) > 0:
+        if robotAbilitesDropdownVariable.get() == "Precentages":
+            abilityPrecentagesDataFrame.to_csv(fileName, index=False)
+        elif robotAbilitesDropdownVariable.get() == "Means":
+            abilityMeansDataFrame.to_csv(fileName, index=False)
+
 def selectTeamSummaryType(*args):
     robotAbilitesText.configure(state=tkinter.NORMAL)
     robotAbilitesText.delete("1.0", tkinter.END)
@@ -549,10 +557,15 @@ def initalizeTeamSummariesWindow():
     teamAbilityWindow.transient(dataWindow)
     teamAbilityWindow.columnconfigure(0, weight=1)
     teamAbilityWindow.rowconfigure(1, weight=1)
+    teamAbilityUpperFrame = tkinter.Frame(teamAbilityWindow)
+    teamAbilityUpperFrame.columnconfigure(0, weight=1)
     robotAbilitesDropdownVariable = tkinter.StringVar(value="Precentages")
     robotAbilitesDropdownVariable.trace_add("write", selectTeamSummaryType)
-    robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityWindow, robotAbilitesDropdownVariable, "Precentages", "Means")
+    robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesDropdownVariable, "Precentages", "Means")
     robotAbilitesDropdown.grid(row=0, column=0, sticky="NEW")
+    exportRobotAbilitesButton = tkinter.Button(teamAbilityUpperFrame, text="Export as CSV", command=exportTeamAbilites)
+    exportRobotAbilitesButton.grid(row=0, column=1)
+    teamAbilityUpperFrame.grid(row=0, column=0, sticky="NEW")
     robotAbilitesText = tkinter.Text(teamAbilityWindow, wrap=tkinter.NONE)
     robotAbilitesText.grid(row=1, column=0, sticky="NESW")
     dataFrameToDisplay = filterDataFrame(True, False)
