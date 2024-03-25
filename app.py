@@ -528,6 +528,15 @@ def selectTeam():
     showAllTeamsToFilterButton.grid(row=0, column=4)
     lowerFrame.grid(row=1, column=0, sticky="EW")
 
+def selectTeamSummaryType(*args):
+    robotAbilitesText.configure(state=tkinter.NORMAL)
+    robotAbilitesText.delete("1.0", tkinter.END)
+    if robotAbilitesDropdownVariable.get() == "Precentages":
+        robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
+    elif robotAbilitesDropdownVariable.get() == "Means":
+        robotAbilitesText.insert(tkinter.END, abilityMeansDataFrame.to_string(index=False))
+    robotAbilitesText.configure(state=tkinter.DISABLED)
+
 def initalizeTeamSummariesWindow():
     global robotAbilitesDropdownVariable
     global robotAbilitesText
@@ -541,6 +550,7 @@ def initalizeTeamSummariesWindow():
     teamAbilityWindow.columnconfigure(0, weight=1)
     teamAbilityWindow.rowconfigure(1, weight=1)
     robotAbilitesDropdownVariable = tkinter.StringVar(value="Precentages")
+    robotAbilitesDropdownVariable.trace_add("write", selectTeamSummaryType)
     robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityWindow, robotAbilitesDropdownVariable, "Precentages", "Means")
     robotAbilitesDropdown.grid(row=0, column=0, sticky="NEW")
     robotAbilitesText = tkinter.Text(teamAbilityWindow, wrap=tkinter.NONE)
@@ -563,8 +573,10 @@ def initalizeTeamSummariesWindow():
             elif type(value) == list:
                 abilityPrecentage = teamDataFrame[~teamDataFrame[ability].isin(value)].shape[0] / teamDataFrame.shape[0] * 100
             abilityPrecentageList.append(abilityPrecentage)
-        abilityPrecentagesDataFrame[ability] = pandas.Series(abilityPrecentageList, dtype="object")
-        abilityMeansDataFrame[ability] = pandas.Series(abilityMeanList, dtype="object")
+        if len(abilityPrecentageList) > 0:
+            abilityPrecentagesDataFrame[ability] = pandas.Series(abilityPrecentageList, dtype="object")
+        if len(abilityMeanList) > 0:
+            abilityMeansDataFrame[ability] = pandas.Series(abilityMeanList, dtype="object")
     abilityPrecentagesDataFrame.sort_values("teamNum", inplace=True)
     abilityMeansDataFrame.sort_values("teamNum", inplace=True)
     robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
