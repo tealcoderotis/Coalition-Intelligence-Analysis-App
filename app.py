@@ -376,10 +376,10 @@ def initalizeDataWindow():
     showRobotStoppedTeamsCheckboxVariable.trace_add("write", selectValue)
     showRobotStoppedTeamsCheckbox = tkinter.Checkbutton(upperFrame, text="Show rounds with stopped robot", indicatoron=False, variable=showRobotStoppedTeamsCheckboxVariable)
     showRobotStoppedTeamsCheckbox.grid(row=0, column=2)
-    selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
-    selectTeamButton.grid(row=0, column=3)
     showTeamSummariesButton = tkinter.Button(upperFrame, text="Team summaries", command=initalizeTeamSummariesWindow)
-    showTeamSummariesButton.grid(row=0, column=4)
+    showTeamSummariesButton.grid(row=0, column=3)
+    selectTeamButton = tkinter.Button(upperFrame, text="Select teams", command=selectTeam)
+    selectTeamButton.grid(row=0, column=4)
     exportButton = tkinter.Button(upperFrame, text="Export values as CSV", command=exportCsv)
     exportButton.grid(row=0, column=5)
     pointExportButton = tkinter.Button(upperFrame, text="Export scores as CSV", command=exportPointCsv)
@@ -540,37 +540,34 @@ def selectTeamSummaryType(*args):
     robotAbilitesText.configure(state=tkinter.NORMAL)
     robotAbilitesText.delete("1.0", tkinter.END)
     if robotAbilitesDropdownVariable.get() == "Precentages":
-        columns = abilityPrecentagesDataFrame.columns
-        robotAbilitesSortByDropdown.children["menu"].delete(0, tkinter.END)
-        for column in columns:
-            robotAbilitesSortByDropdown.children["menu"].add_command(label=column, command=lambda col=column: robotAbilitesSortByDropdownVariable.set(col))
-        robotAbilitesSortByDropdownVariable.set(robotAbilitesPrecentageSorting)
+        robotAbilitesMeanDropdown.grid_remove()
+        robotAbilitesPrecentageDropdown.grid(row=0, column=1)
         robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
     elif robotAbilitesDropdownVariable.get() == "Means":
-        columns = abilityMeansDataFrame.columns
-        robotAbilitesSortByDropdown.children["menu"].delete(0, tkinter.END)
-        for column in columns:
-            robotAbilitesSortByDropdown.children["menu"].add_command(label=column, command=lambda col=column: robotAbilitesSortByDropdownVariable.set(col))
-        robotAbilitesSortByDropdownVariable.set(robotAbilitesPrecentageSorting)
+        robotAbilitesPrecentageDropdown.grid_remove()
+        robotAbilitesMeanDropdown.grid(row=0, column=1)
         robotAbilitesText.insert(tkinter.END, abilityMeansDataFrame.to_string(index=False))
     robotAbilitesText.configure(state=tkinter.DISABLED)
 
-def selectTeamSummarySorting(*args):
-    global robotAbilitesPrecentageSorting
-    global robotAbilitesMeanSorting
-    if robotAbilitesDropdownVariable.get() == "Precentages":
-        robotAbilitesPrecentageSorting = robotAbilitesSortByDropdownVariable.get()
-        if robotAbilitesPrecentageSorting == "teamNum":
-            abilityPrecentagesDataFrame.sort_values(robotAbilitesPrecentageSorting, ascending=True, inplace=True)
-        else:
-            abilityPrecentagesDataFrame.sort_values(robotAbilitesPrecentageSorting, ascending=False, inplace=True)
-    elif robotAbilitesDropdownVariable.get() == "Means":
-        robotAbilitesMeanSorting = robotAbilitesSortByDropdownVariable.get()
-        if robotAbilitesMeanSorting == "teamNum":
-            abilityPrecentagesDataFrame.sort_values(robotAbilitesMeanSorting, ascending=True, inplace=True)
-        else:
-            abilityPrecentagesDataFrame.sort_values(robotAbilitesMeanSorting, ascending=False, inplace=True)
-    selectTeamSummaryType()
+def selectTeamPrecentageSorting(*args):
+    robotAbilitesText.configure(state=tkinter.NORMAL)
+    robotAbilitesText.delete("1.0", tkinter.END)
+    if robotAbilitesPrecentageDropdownVariable.get() == "teamNum":
+        abilityPrecentagesDataFrame.sort_values(robotAbilitesPrecentageDropdownVariable.get(), ascending=True, inplace=True)
+    else:
+        abilityPrecentagesDataFrame.sort_values(robotAbilitesPrecentageDropdownVariable.get(), ascending=False, inplace=True)
+    robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
+    robotAbilitesText.configure(state=tkinter.DISABLED)
+
+def selectTeamMeanSorting(*args):
+    robotAbilitesText.configure(state=tkinter.NORMAL)
+    robotAbilitesText.delete("1.0", tkinter.END)
+    if robotAbilitesMeanDropdownVariable.get() == "teamNum":
+        abilityMeansDataFrame.sort_values(robotAbilitesMeanDropdownVariable.get(), ascending=True, inplace=True)
+    else:
+        abilityMeansDataFrame.sort_values(robotAbilitesMeanDropdownVariable.get(), ascending=False, inplace=True)
+    robotAbilitesText.insert(tkinter.END, abilityMeansDataFrame.to_string(index=False))
+    robotAbilitesText.configure(state=tkinter.DISABLED)
 
 def initalizeTeamSummariesWindow():
     global robotAbilitesDropdownVariable
@@ -578,10 +575,10 @@ def initalizeTeamSummariesWindow():
     global abilityPrecentagesDataFrame
     global abilityMeansDataFrame
     global robotAbilitesDropdownVariable
-    global robotAbilitesSortByDropdown
-    global robotAbilitesSortByDropdownVariable
-    global robotAbilitesPrecentageSorting
-    global robotAbilitesMeanSorting
+    global robotAbilitesPrecentageDropdownVariable
+    global robotAbilitesPrecentageDropdown
+    global robotAbilitesMeanDropdownVariable
+    global robotAbilitesMeanDropdown
     dataFrameToDisplay = filterDataFrame(True, False)
     teams = dataFrameToDisplay["teamNum"].drop_duplicates().values
     abilityPrecentagesDataFrame = pandas.DataFrame()
@@ -615,16 +612,16 @@ def initalizeTeamSummariesWindow():
     teamAbilityWindow.rowconfigure(1, weight=1)
     teamAbilityUpperFrame = tkinter.Frame(teamAbilityWindow)
     teamAbilityUpperFrame.columnconfigure(0, weight=1)
-    robotAbilitesPrecentageSorting = "teamNum"
-    robotAbilitesMeanSorting = "teamNum"
     robotAbilitesDropdownVariable = tkinter.StringVar(value="Precentages")
-    robotAbilitesDropdownVariable.trace_add("write", selectTeamSummaryType)
-    robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesDropdownVariable, "Precentages", "Means")
+    robotAbilitesDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesDropdownVariable, "Precentages", "Means", command=selectTeamSummaryType)
     robotAbilitesDropdown.grid(row=0, column=0, sticky="NEW")
-    robotAbilitesSortByDropdownVariable = tkinter.StringVar(value="teamNum")
-    robotAbilitesSortByDropdownVariable.trace_add("write", selectTeamSummaryType)
-    robotAbilitesSortByDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesSortByDropdownVariable, *list(abilityPrecentagesDataFrame.columns))
-    robotAbilitesSortByDropdown.grid(row=0, column=1)
+    robotAbilitesPrecentageDropdownVariable = tkinter.StringVar(value="teamNum")
+    robotAbilitesPrecentageDropdownVariable.trace_add("write", selectTeamPrecentageSorting)
+    robotAbilitesPrecentageDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesPrecentageDropdownVariable, *list(abilityPrecentagesDataFrame.columns))
+    robotAbilitesMeanDropdownVariable = tkinter.StringVar(value="teamNum")
+    robotAbilitesMeanDropdownVariable.trace_add("write", selectTeamMeanSorting)
+    robotAbilitesMeanDropdown = tkinter.OptionMenu(teamAbilityUpperFrame, robotAbilitesMeanDropdownVariable, *list(abilityMeansDataFrame.columns))
+    robotAbilitesPrecentageDropdown.grid(row=0, column=1)
     exportRobotAbilitesButton = tkinter.Button(teamAbilityUpperFrame, text="Export as CSV", command=exportTeamAbilites)
     exportRobotAbilitesButton.grid(row=0, column=2)
     teamAbilityUpperFrame.grid(row=0, column=0, sticky="NEW")

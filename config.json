@@ -71,6 +71,7 @@
         "auto_cycleCount": ["auto_ampNotes", "auto_speakerNotes"]
     },
     "robotAbilites": {
+        "auto_leave": [false],
         "auto_ampNotes": 0,
         "auto_speakerNotes": 0,
         "auto_cycleCount": 0,
