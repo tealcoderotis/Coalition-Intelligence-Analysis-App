@@ -116,8 +116,8 @@ def selectValue(*args):
     dataFrameToUse = filterDataFrame(False, False)
     noShowCount = dataFrameToUse[dataFrameToUse["noShow"].values == True].shape[0]
     showCount = dataFrameToUse[dataFrameToUse["noShow"].values == False].shape[0]
-    robotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values == "No stop"].shape[0]
-    noRobotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values != "No stop"].shape[0]
+    robotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values != "No stop"].shape[0]
+    noRobotStoppedCount = dataFrameToUse[dataFrameToUse["robotStop"].values == "No stop"].shape[0]
     totalCount = dataFrameToUse.shape[0]
     countLabel.configure(text=f"{noShowCount} rounds without robot    {showCount} rounds with robot    {robotStoppedCount} rounds with stopped robot    {noRobotStoppedCount} rounds without stopped robot    {totalCount} rounds total")
     dataFrameToDisplay = filterDataFrame(True, False)
