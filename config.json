@@ -4,7 +4,7 @@
         "auto_ampNotes": 1,
         "auto_speakerNotes": 2,
         "ampNotes": 2,
-        "speakerNotes": 5,
+        "speakerNotes": 2,
         "trapNotes": 5,
         "climb": {
             "No climb": 0,
@@ -78,6 +78,7 @@
         "ampNotes": 0,
         "speakerNotes": 0,
         "cycleCount": 0,
+        "trapNotes": 0,
         "climb": ["No climb", "Parked"]
     }
 }
