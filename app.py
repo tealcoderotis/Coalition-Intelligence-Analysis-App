@@ -6,7 +6,6 @@ import tkinter.messagebox
 import json
 import sys
 import os
-from io import StringIO
 
 try:
     import pyi_splash
@@ -64,11 +63,6 @@ def removeCsvFile():
     except:
         pass
 
-def removeWhiteSpace(data):
-    data = data.to_csv(index=False)
-    data.replace(" ", "")
-    return pandas.read_csv(StringIO(data))
-
 def mergeCsvFiles():
     global dataFrame
     global pointDataFrame
@@ -79,8 +73,6 @@ def mergeCsvFiles():
             for i in range(1, len(filesToMerge)):
                 data = pandas.read_csv(filesToMerge[i])
                 dataFrame = pandas.concat([dataFrame, data], ignore_index=True)
-            if "preprocessed" not in dataFrame.columns:
-                dataFrame = removeWhiteSpace(dataFrame)
             dataFrame.sort_values("roundNum", inplace=True)
             if "preprocessed" not in dataFrame.columns:
                 dataFrame["preprocessed"] = True
