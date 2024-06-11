@@ -1,17 +1,9 @@
 import pandas
-from matplotlib import pyplot
+import matplotlib.pyplot as pyplot
 import tkinter
 import tkinter.filedialog
 import tkinter.messagebox
 import json
-import sys
-import os
-
-try:
-    import pyi_splash
-    pyi_splash.close()
-except:
-    pass
 
 def replaceDataFrameWithPointValue(data, pointValue, dataType):
     if dataType == "bool":
@@ -322,12 +314,6 @@ def convertToCSPFormat():
     else:
         tkinter.messagebox.showerror("Error", "No CSV files selected")
 
-def getIcon():
-    if getattr(sys, "frozen", False):
-        return os.path.join(sys._MEIPASS, "icon.ico")
-    else:
-        return "icon.ico"
-
 def initalizeDataWindow():
     global dataWindow
     global dataFrame
@@ -349,7 +335,7 @@ def initalizeDataWindow():
     filteredDataFrame = None
     mergeWindow.destroy()
     dataWindow = tkinter.Tk()
-    dataWindow.iconbitmap(default=getIcon())
+    dataWindow.iconbitmap("icon.ico")
     dataWindow.title("Coalition Intelligence Analysis App")
     dataWindow.geometry("800x500")
     dataWindow.columnconfigure(0, weight=1)
@@ -432,7 +418,7 @@ def initalizeMergeWindow():
     global robotAbilites
     filesToMerge = []
     mergeWindow = tkinter.Tk()
-    mergeWindow.iconbitmap(default=getIcon())
+    mergeWindow.iconbitmap("icon.ico")
     mergeWindow.title("Merge CSV Files")
     mergeWindow.geometry("500x300")
     mergeWindow.columnconfigure(0, weight=1)
@@ -630,4 +616,5 @@ def initalizeTeamSummariesWindow():
     robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
     robotAbilitesText.configure(state=tkinter.DISABLED)
 
+#pyplot.switch_backend("TkAgg")
 initalizeMergeWindow()
