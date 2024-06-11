@@ -1,11 +1,11 @@
 from cx_Freeze import setup, Executable
-import os.path
+from sys import setrecursionlimit, getrecursionlimit
 
+setrecursionlimit(getrecursionlimit() * 20)
 
 build_exe_options = {
     "include_msvcr": True,
     "include_files": ["icon.ico", "config.json"],
-    "includes": ["plotting", "matplotlib.pyplot", "pandas.plotting._core"],
     "excludes": ["PyQt5"]
 }
 

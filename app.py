@@ -616,5 +616,5 @@ def initalizeTeamSummariesWindow():
     robotAbilitesText.insert(tkinter.END, abilityPrecentagesDataFrame.to_string(index=False))
     robotAbilitesText.configure(state=tkinter.DISABLED)
 
-#pyplot.switch_backend("TkAgg")
+pyplot.switch_backend("TkAgg")
 initalizeMergeWindow()
