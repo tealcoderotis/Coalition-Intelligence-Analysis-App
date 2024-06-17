@@ -197,11 +197,11 @@ def showBoxPlot(usePointValues=False):
     teams = dataFrameToDisplay.sort_values("teamNum")["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
         axies = pyplot.subplots(nrows=1, ncols=1, sharey=True)[1]
-        columnToDisplay.plot.box(ax=axies)
+        columnToDisplay.plot(kind="box", ax=axies)
         axies.set_title(teams[0])
     else:
         axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1, sharey=True)[1]
-        columnToDisplay.plot.box(ax=axies[0])
+        columnToDisplay.plot(kind="box", ax=axies[0])
         axies[0].set_title("All Teams")
         for i in range(len(teams)):
             teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
@@ -220,11 +220,11 @@ def showLinePlot(usePointValues=False):
     teams = dataFrameToDisplay.sort_values("teamNum")["teamNum"].drop_duplicates().values
     if (len(teams) == 1):
         axies = pyplot.subplots(nrows=1, ncols=1, sharey=True, sharex=True)[1]
-        columnsToDisplay.plot.line(ax=axies, x="roundNum", y=variableDropdownVariable.get())
+        columnsToDisplay.plot(kind="line", ax=axies, x="roundNum", y=variableDropdownVariable.get())
         axies.set_title(teams[0])
     else:
         axies = pyplot.subplots(nrows=1, ncols=len(teams) + 1, sharey=True, sharex=True)[1]
-        columnsToDisplay.plot.line(ax=axies[0], x="roundNum", y=variableDropdownVariable.get())
+        columnsToDisplay.plot(kind="line", ax=axies[0], x="roundNum", y=variableDropdownVariable.get())
         axies[0].set_title("All Teams")
         for i in range(len(teams)):
             teamDataFrame = dataFrameToDisplay[dataFrameToDisplay["teamNum"].isin([teams[i]])]
