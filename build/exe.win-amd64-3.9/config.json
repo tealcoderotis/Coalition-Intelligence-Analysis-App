@@ -1,0 +1,84 @@
+{
+    "pointValues": {
+        "auto_leave": 2,
+        "auto_ampNotes": 1,
+        "auto_speakerNotes": 2,
+        "ampNotes": 2,
+        "speakerNotes": 2,
+        "trapNotes": 5,
+        "climb": {
+            "No climb": 0,
+            "Parked": 1,
+            "Climbed": 3,
+            "Harmony": 5
+        }
+    },
+    "dropdownValues": {
+        "robotStop": ["No stop", "Fixed during round", "Several stops", "Died until end"],
+        "climb": ["No climb", "Parked", "Climbed", "Harmony"]
+    },
+    "hideFromSelector": ["auto_ampNotesFail", "auto_speakerNotesFail", "ampNotesFail", "speakerNotesFail", "trapNotesFail"],
+    "CSPConverterValues": {
+        "id": "",
+        "flUploaded": "",
+        "txEvent": "",
+        "numMatch": "roundNum",
+        "idAlliance": "",
+        "idDriveStation": "",
+        "idTeam": "teamNum",
+        "txScoutName": "",
+        "idStartPosition": "",
+        "flRed": "",
+        "flYellow": "",
+        "flCrash": "",
+        "flAutoStop": "",
+        "autoFlStart": "",
+        "autoFlBaseLine": "auto_leave",
+        "autoNumCellLoad": "",
+        "autoFlFoul": "",
+        "autoFlRobotContact": "",
+        "autoFlLoseStartObject": "",
+        "autoFlFail": "",
+        "autoNumAmpAttempt": ["auto_ampNotes", "auto_ampNotesFail"],
+        "autoNumAmpSuccess": "auto_ampNotes",
+        "autoNumSpeakerAttempt": ["auto_speakerNotes", "auto_speakerNotesFail"],
+        "autoNumSpeakerSuccess": "auto_speakerNotes",
+        "autoNumTrapAttempt": "",
+        "autoNumTrapSuccess": "",
+        "teleNumAmpAttempt": ["ampNotes", "ampNotesFail"],
+        "teleNumAmpSuccess": "ampNotes",
+        "teleNumSpeakerAttempt": ["speakerNotes", "speakerNotesFail"],
+        "teleNumSpeakerSuccess": "speakerNotes",
+        "teleNumTrapAttempt": ["trapNotesFail", "trapNotes"],
+        "teleNumTrapSuccess": "trapNotes",
+        "teleFlPark": {
+            "value": "climb",
+            "dropdownValues": [false, true, false, false]
+        },
+        "teleIdStageOutcome": {
+            "value": "climb",
+            "dropdownValues": [0, 0, 3, 3]
+        },
+        "teleIdStageClimbSpeed": "",
+        "teleFlStageAssist": "",
+        "teleFlSpotlight": {
+            "value": "climb",
+            "dropdownValues": ["", "", "", ""]
+        }
+    },
+    "cycleCounts": {
+        "cycleCount": ["ampNotes", "speakerNotes"],
+        "auto_cycleCount": ["auto_ampNotes", "auto_speakerNotes"]
+    },
+    "robotAbilites": {
+        "auto_leave": [false],
+        "auto_ampNotes": 0,
+        "auto_speakerNotes": 0,
+        "auto_cycleCount": 0,
+        "ampNotes": 0,
+        "speakerNotes": 0,
+        "cycleCount": 0,
+        "trapNotes": 0,
+        "climb": ["No climb", "Parked"]
+    }
+}
